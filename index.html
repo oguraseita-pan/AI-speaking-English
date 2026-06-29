@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#18A05A">
+<title>Sprout Speaking</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+/* =========================================================================
+   Sprout Speaking — design tokens (Sprout-compatible)
+   Retheme to match exact Sprout colors by editing this block only.
+   ========================================================================= */
+:root{
+  --primary:#18A05A;        /* sprout green */
+  --primary-dark:#0E8049;
+  --primary-soft:#E6F6EC;
+  --primary-tint:#F1FAF4;
+  --bg:#F5F8F4;
+  --surface:#FFFFFF;
+  --text:#15241C;
+  --muted:#6E827A;
+  --faint:#9AAAA2;
+  --border:#E6ECE7;
+  --user-bubble:#18A05A;
+  --ai-bubble:#FFFFFF;
+  --danger:#D2533F;
+  --shadow:0 1px 2px rgba(20,40,30,.04), 0 8px 24px rgba(20,40,30,.06);
+  --shadow-sm:0 1px 2px rgba(20,40,30,.05);
+  --radius:18px;
+  --radius-sm:12px;
+  --maxw:480px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%}
+body{
+  font-family:"Noto Sans JP",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg);color:var(--text);
+  line-height:1.6;-webkit-font-smoothing:antialiased;
+  overscroll-behavior-y:none;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input{font-family:inherit}
+
+/* ---- App shell ---- */
+#app{max-width:var(--maxw);margin:0 auto;min-height:100dvh;display:flex;flex-direction:column;position:relative;background:var(--bg)}
+
+/* ---- Top bar ---- */
+.topbar{
+  position:sticky;top:0;z-index:20;background:rgba(245,248,244,.86);
+  backdrop-filter:saturate(140%) blur(10px);
+  padding:max(10px,env(safe-area-inset-top)) 16px 10px;
+  display:flex;align-items:center;gap:9px;border-bottom:1px solid var(--border);
+}
+.brand{display:flex;align-items:center;gap:8px;font-weight:900;letter-spacing:-.01em;font-size:18px}
+.leaf{width:26px;height:26px;flex:0 0 auto}
+.brand .sub{font-weight:500;color:var(--muted);font-size:12.5px;margin-left:1px}
+.topbar .spacer{flex:1}
+.chip-btn{
+  font-size:12.5px;font-weight:700;color:var(--primary-dark);
+  background:var(--primary-soft);padding:6px 11px;border-radius:999px;display:flex;align-items:center;gap:5px;
+}
+.chip-btn.ghost{background:transparent;color:var(--muted)}
+
+/* ---- Scroll area ---- */
+.screen{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.pad{padding:18px 16px 24px}
+
+/* ---- Tab bar ---- */
+.tabbar{
+  position:sticky;bottom:0;z-index:20;background:rgba(255,255,255,.92);
+  backdrop-filter:saturate(140%) blur(10px);
+  border-top:1px solid var(--border);
+  display:flex;padding:6px 6px max(6px,env(safe-area-inset-bottom));
+}
+.tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 0;color:var(--faint);font-size:11px;font-weight:700;border-radius:12px;transition:color .15s}
+.tabbar button.active{color:var(--primary)}
+.tabbar svg{width:23px;height:23px}
+
+/* ---- Section headings ---- */
+.eyebrow{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:2px 0 12px}
+.hello{font-size:23px;font-weight:900;letter-spacing:-.02em;margin:2px 0 3px}
+.hello-sub{color:var(--muted);font-size:14px;margin:0 0 20px}
+
+/* ---- Mode grid ---- */
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.mode-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:15px 14px;text-align:left;box-shadow:var(--shadow-sm);transition:transform .12s ease, box-shadow .15s;
+  display:flex;flex-direction:column;gap:9px;min-height:104px;
+}
+.mode-card:active{transform:scale(.975)}
+.mode-card .ic{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:21px;background:var(--primary-soft)}
+.mode-card .mt{font-weight:700;font-size:14.5px;line-height:1.35}
+.mode-card .md{font-size:11.5px;color:var(--muted);line-height:1.4;margin-top:-4px}
+.mode-card.free{grid-column:1 / -1;flex-direction:row;align-items:center;min-height:0;background:var(--primary);border-color:var(--primary)}
+.mode-card.free .ic{background:rgba(255,255,255,.18)}
+.mode-card.free .mt,.mode-card.free .md{color:#fff}
+.mode-card.free .md{opacity:.85}
+.mode-card.free .arr{margin-left:auto;color:#fff;opacity:.9}
+
+/* ---- Chat ---- */
+.chat-head{
+  position:sticky;top:0;z-index:5;background:var(--bg);
+  display:flex;align-items:center;gap:10px;padding:12px 16px 11px;border-bottom:1px solid var(--border);
+}
+.chat-head .back{width:34px;height:34px;border-radius:10px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center}
+.chat-head .ttl{font-weight:700;font-size:15px;line-height:1.2}
+.chat-head .lv{font-size:11.5px;color:var(--muted)}
+.chat-head .mute{margin-left:auto;width:34px;height:34px;border-radius:10px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.chat-head .mute.on{color:var(--primary);background:var(--primary-soft);border-color:transparent}
+
+.messages{padding:16px 14px 8px;display:flex;flex-direction:column;gap:14px}
+.row{display:flex;flex-direction:column;max-width:86%}
+.row.user{align-self:flex-end;align-items:flex-end}
+.row.ai{align-self:flex-start;align-items:flex-start}
+.bubble{padding:11px 14px;border-radius:16px;font-size:15px;line-height:1.55;word-break:break-word}
+.row.user .bubble{background:var(--user-bubble);color:#fff;border-bottom-right-radius:5px}
+.row.ai .bubble{background:var(--ai-bubble);border:1px solid var(--border);border-bottom-left-radius:5px;box-shadow:var(--shadow-sm)}
+.row.ai .bubble w{cursor:pointer;border-radius:4px;padding:0 1px;transition:background .12s}
+.row.ai .bubble w:active,.row.ai .bubble w.saved{background:var(--primary-soft);box-shadow:inset 0 -2px 0 var(--primary)}
+.ai-tools{display:flex;gap:14px;margin-top:7px;padding-left:3px}
+.ai-tools button{font-size:11.5px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:4px}
+.ai-tools button.act{color:var(--primary-dark)}
+.ja-line{font-size:13px;color:var(--muted);margin-top:7px;padding-top:7px;border-top:1px dashed var(--border);display:none}
+.ja-line.show{display:block}
+.fix{
+  align-self:flex-start;background:#FFF8F1;border:1px solid #F4E2CF;border-radius:12px;
+  padding:8px 11px;font-size:12.5px;margin-top:2px;max-width:86%;
+}
+.fix .lab{font-weight:700;color:#B66A2E;display:flex;align-items:center;gap:5px;margin-bottom:2px}
+.fix .corr{color:#7A4A1E;font-weight:600}
+.fix .note{color:#9A7B5A;font-size:11.5px;margin-top:2px}
+
+.typing{display:flex;gap:4px;padding:13px 15px;background:var(--ai-bubble);border:1px solid var(--border);border-radius:16px;border-bottom-left-radius:5px;width:fit-content}
+.typing span{width:7px;height:7px;border-radius:50%;background:var(--faint);animation:bob 1.1s infinite}
+.typing span:nth-child(2){animation-delay:.15s}.typing span:nth-child(3){animation-delay:.3s}
+@keyframes bob{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
+
+/* ---- Input dock ---- */
+.dock{position:sticky;bottom:0;background:linear-gradient(180deg,rgba(245,248,244,0),var(--bg) 26%);padding:6px 14px max(10px,env(safe-area-inset-bottom))}
+.interim{min-height:0;font-size:13px;color:var(--primary-dark);text-align:center;padding:0 8px;transition:min-height .2s}
+.interim.show{min-height:22px;margin-bottom:4px}
+.input-row{display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:5px 6px 5px 16px;box-shadow:var(--shadow)}
+.input-row input{flex:1;border:none;outline:none;background:none;font-size:15px;padding:7px 0;min-width:0}
+.send{width:38px;height:38px;border-radius:50%;background:var(--primary-soft);color:var(--primary-dark);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.send:disabled{opacity:.4}
+.mic-wrap{position:relative;flex:0 0 auto}
+.mic{width:46px;height:46px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(24,160,90,.35);position:relative;z-index:2;transition:transform .12s}
+.mic:active{transform:scale(.92)}
+.mic.live{background:var(--danger);box-shadow:0 4px 14px rgba(210,83,63,.4)}
+.mic-wrap.live::before,.mic-wrap.live::after{content:"";position:absolute;inset:0;border-radius:50%;background:var(--danger);opacity:.35;animation:ring 1.8s ease-out infinite;z-index:1}
+.mic-wrap.live::after{animation-delay:.9s}
+@keyframes ring{0%{transform:scale(1);opacity:.35}100%{transform:scale(2.1);opacity:0}}
+
+/* ---- Cards tab ---- */
+.stat-row{display:flex;gap:10px;margin-bottom:18px}
+.stat{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:13px 14px;box-shadow:var(--shadow-sm)}
+.stat .n{font-size:24px;font-weight:900;letter-spacing:-.02em;line-height:1}
+.stat .l{font-size:11.5px;color:var(--muted);margin-top:4px}
+.card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px 15px;box-shadow:var(--shadow-sm);margin-bottom:10px;position:relative;
+}
+.card .w{font-size:17px;font-weight:700}
+.card .pos{font-size:11px;color:var(--primary-dark);background:var(--primary-soft);padding:2px 7px;border-radius:6px;margin-left:7px;vertical-align:2px;font-weight:700}
+.card .m{font-size:14px;color:var(--text);margin-top:5px}
+.card .ex{font-size:12.5px;color:var(--muted);margin-top:7px;padding-top:8px;border-top:1px dashed var(--border)}
+.card .ex .en{color:var(--text)}
+.card .del{position:absolute;top:11px;right:11px;width:26px;height:26px;border-radius:8px;color:var(--faint);display:flex;align-items:center;justify-content:center}
+.card.loading{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:14px}
+.mini-spin{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---- Empty states ---- */
+.empty{text-align:center;padding:60px 26px;color:var(--muted)}
+.empty .ei{width:62px;height:62px;border-radius:18px;background:var(--primary-soft);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:28px}
+.empty h3{font-size:16px;font-weight:700;color:var(--text);margin:0 0 5px}
+.empty p{font-size:13.5px;margin:0;line-height:1.6}
+
+/* ---- Settings ---- */
+.set-group{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-sm);margin-bottom:16px}
+.set-row{display:flex;align-items:center;gap:12px;padding:14px 15px;border-bottom:1px solid var(--border)}
+.set-row:last-child{border-bottom:none}
+.set-row .info{flex:1}
+.set-row .t{font-size:14.5px;font-weight:500}
+.set-row .d{font-size:11.5px;color:var(--muted);margin-top:1px}
+.seg{display:flex;gap:5px;background:var(--bg);padding:4px;border-radius:11px}
+.seg button{padding:6px 11px;border-radius:8px;font-size:13px;font-weight:700;color:var(--muted)}
+.seg button.on{background:var(--surface);color:var(--primary-dark);box-shadow:var(--shadow-sm)}
+.toggle{width:46px;height:28px;border-radius:999px;background:var(--border);position:relative;transition:background .18s;flex:0 0 auto}
+.toggle.on{background:var(--primary)}
+.toggle::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .18s}
+.toggle.on::after{transform:translateX(18px)}
+input[type=range]{flex:1;accent-color:var(--primary)}
+.note-box{font-size:12px;color:var(--muted);line-height:1.6;background:var(--primary-tint);border:1px solid var(--border);border-radius:14px;padding:13px 14px}
+.note-box b{color:var(--text)}
+
+/* ---- Toast ---- */
+#toast{position:fixed;left:50%;bottom:88px;transform:translateX(-50%) translateY(20px);z-index:60;
+  background:#15241C;color:#fff;font-size:13px;font-weight:600;padding:10px 16px;border-radius:999px;
+  opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;max-width:88%;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+.hidden{display:none!important}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar">
+    <svg class="leaf" viewBox="0 0 32 32" fill="none">
+      <path d="M16 28C16 28 16 18 16 14C16 8 22 4 28 4C28 12 24 18 16 18" fill="#18A05A"/>
+      <path d="M16 28C16 28 16 20 16 17C16 12 11 9 5 9C5 16 9 21 16 21" fill="#34B36A"/>
+      <rect x="15" y="17" width="2" height="11" rx="1" fill="#0E8049"/>
+    </svg>
+    <div class="brand">Sprout <span class="sub">Speaking</span></div>
+    <div class="spacer"></div>
+    <button class="chip-btn ghost" id="levelChip" onclick="setTab('settings')">B1</button>
+  </div>
+
+  <!-- ============ TALK SCREEN ============ -->
+  <div class="screen" id="screen-talk">
+    <!-- mode picker -->
+    <div class="pad" id="modePicker">
+      <div class="hello" id="greeting">Hi! 今日は何を話す？</div>
+      <p class="hello-sub">話したい場面を選ぶと、その役で会話できるよ。</p>
+      <div class="mode-grid" id="modeGrid"></div>
+    </div>
+
+    <!-- chat (hidden until a mode is picked) -->
+    <div id="chatView" class="hidden" style="display:flex;flex-direction:column;height:100%">
+      <div class="chat-head">
+        <button class="back" onclick="exitMode()" aria-label="戻る">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div>
+          <div class="ttl" id="chatTitle">Free talk</div>
+          <div class="lv" id="chatLevel">Level B1</div>
+        </div>
+        <button class="mute on" id="voiceToggle" onclick="toggleVoice()" aria-label="音声">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 010 7"/><path d="M19 5a9 9 0 010 14"/></svg>
+        </button>
+      </div>
+      <div class="screen" style="flex:1" id="msgScroll">
+        <div class="messages" id="messages"></div>
+      </div>
+      <div class="dock">
+        <div class="interim" id="interim"></div>
+        <div class="input-row">
+          <input id="textIn" placeholder="話すか、入力してもOK" autocomplete="off"
+                 onkeydown="if(event.key==='Enter')sendTyped()">
+          <button class="send" id="sendBtn" onclick="sendTyped()" disabled aria-label="送信">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+          </button>
+          <div class="mic-wrap" id="micWrap">
+            <button class="mic" id="micBtn" onclick="toggleMic()" aria-label="話す">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0"/><path d="M12 17v4"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ CARDS SCREEN ============ -->
+  <div class="screen hidden" id="screen-cards">
+    <div class="pad">
+      <div class="eyebrow">単語カード</div>
+      <div class="stat-row">
+        <div class="stat"><div class="n" id="cardCount">0</div><div class="l">保存したカード</div></div>
+        <div class="stat"><div class="n" id="todayCount">0</div><div class="l">今日 追加</div></div>
+      </div>
+      <button class="chip-btn" style="margin-bottom:16px" onclick="syncStub()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.5 9a9 9 0 0114.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0020.5 15"/></svg>
+        Sproutと同期
+      </button>
+      <div id="cardList"></div>
+    </div>
+  </div>
+
+  <!-- ============ SETTINGS SCREEN ============ -->
+  <div class="screen hidden" id="screen-settings">
+    <div class="pad">
+      <div class="eyebrow">設定</div>
+      <div class="set-group">
+        <div class="set-row">
+          <div class="info"><div class="t">レベル</div><div class="d">語彙と話す速さが変わる（Sproutと同じCEFR）</div></div>
+          <div class="seg" id="levelSeg"></div>
+        </div>
+      </div>
+      <div class="set-group">
+        <div class="set-row">
+          <div class="info"><div class="t">AIの音声</div><div class="d">返答を読み上げる</div></div>
+          <button class="toggle on" id="tgVoice" onclick="toggleVoice()"></button>
+        </div>
+        <div class="set-row">
+          <div class="info"><div class="t">読み上げ速度</div><div class="d" id="rateLabel">0.95×</div></div>
+          <input type="range" id="rateRange" min="0.6" max="1.2" step="0.05" value="0.95" oninput="setRate(this.value)">
+        </div>
+        <div class="set-row">
+          <div class="info"><div class="t">日本語訳を最初から表示</div><div class="d">返答の下に訳を出す</div></div>
+          <button class="toggle" id="tgJa" onclick="toggleJaDefault()"></button>
+        </div>
+      </div>
+      <div class="note-box">
+        <b>本番（Vercel公開・iOS PWA対応）にする時</b><br>
+        ① 文字起こしをクラウドSTT（Whisper等）に差し替え ＝ ホーム画面追加でも動く<br>
+        ② LLM呼び出しを <code>/api/chat</code>（Vercel関数）経由のOpenAIに変更<br>
+        ③ 保存を localStorage＋Firebase に。<code>cards</code> をSproutと共有コレクションで双方向同期<br>
+        コード内の <b>SWAP</b> コメントが差し替え箇所。
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TAB BAR ============ -->
+  <div class="tabbar">
+    <button id="tab-talk" class="active" onclick="setTab('talk')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+      会話
+    </button>
+    <button id="tab-cards" onclick="setTab('cards')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="14" rx="2.5"/><path d="M2 9h20"/><path d="M6 13h6"/></svg>
+      カード
+    </button>
+    <button id="tab-settings" onclick="setTab('settings')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      設定
+    </button>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+/* =========================================================================
+   STATE  (SWAP: in-memory now. For deploy, back `cards`/`settings` with
+   localStorage + Firebase; `cards` collection is the Sprout sync point.)
+   ========================================================================= */
+const state = {
+  tab:'talk',
+  mode:null,
+  level:'B1',
+  voiceOn:true,
+  rate:0.95,
+  jaDefault:false,
+  cards:[],        // {id, word, pos, meaning_ja, example_en, example_ja, created, srs}
+  convo:[],        // full API history incl. hidden seed: {role, content}
+  busy:false,
+  listening:false,
+};
+
+const SCENARIOS = [
+  {id:'free', free:true, icon:'💬', title:'フリートーク', desc:'なんでも自由に',
+   ctx:'an open free-talk conversation about anything the learner wants'},
+  {id:'cafe', icon:'☕️', title:'カフェ・注文', desc:'飲み物や食事を注文',
+   ctx:'a cafe / restaurant where you are the barista or server taking the learner\'s order'},
+  {id:'airport', icon:'✈️', title:'空港・入国', desc:'チェックイン〜入国審査',
+   ctx:'an airport: you play check-in staff and an immigration officer'},
+  {id:'direction', icon:'🗺️', title:'道を尋ねる', desc:'場所や行き方を聞く',
+   ctx:'a street where the learner asks you, a local, for directions'},
+  {id:'hotel', icon:'🛎️', title:'ホテル', desc:'チェックイン・要望',
+   ctx:'a hotel front desk where you are the receptionist'},
+  {id:'smalltalk', icon:'🙌', title:'自己紹介', desc:'初対面のスモールトーク',
+   ctx:'meeting someone new at a casual event; make friendly small talk'},
+  {id:'business', icon:'💼', title:'ビジネス', desc:'会議・電話のやり取り',
+   ctx:'a workplace meeting / business call between colleagues'},
+  {id:'shopping', icon:'🛍️', title:'買い物', desc:'店員とのやり取り',
+   ctx:'a clothing store where you are the shop assistant'},
+];
+
+const RATE_TXT = v => (Number(v).toFixed(2)+'×');
+
+/* ---------- tiny helpers ---------- */
+const $ = id => document.getElementById(id);
+const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),1900); }
+
+/* =========================================================================
+   TABS
+   ========================================================================= */
+function setTab(tab){
+  state.tab = tab;
+  ['talk','cards','settings'].forEach(t=>{
+    $('screen-'+t).classList.toggle('hidden', t!==tab);
+    $('tab-'+t).classList.toggle('active', t===tab);
+  });
+  if(tab==='cards') renderCards();
+  if(tab==='settings') syncSettingsUI();
+}
+
+/* =========================================================================
+   MODE PICKER
+   ========================================================================= */
+function renderModeGrid(){
+  $('modeGrid').innerHTML = SCENARIOS.map(s=>`
+    <button class="mode-card${s.free?' free':''}" onclick="startMode('${s.id}')">
+      <div class="ic">${s.icon}</div>
+      <div>
+        <div class="mt">${s.title}</div>
+        <div class="md">${s.desc}</div>
+      </div>
+      ${s.free?'<span class="arr"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>':''}
+    </button>`).join('');
+}
+
+function startMode(id){
+  const s = SCENARIOS.find(x=>x.id===id);
+  state.mode = s;
+  state.convo = [];
+  $('modePicker').classList.add('hidden');
+  $('chatView').classList.remove('hidden');
+  $('chatTitle').textContent = s.title;
+  $('chatLevel').textContent = 'Level '+state.level;
+  $('messages').innerHTML = '';
+  $('textIn').value=''; $('sendBtn').disabled=true;
+  // AI opens the conversation
+  getAIResponse('(The learner just started this practice. Greet them warmly in one short line and naturally kick off the role-play.)', true);
+}
+
+function exitMode(){
+  stopMic();
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+  state.mode=null;
+  $('chatView').classList.add('hidden');
+  $('modePicker').classList.remove('hidden');
+}
+
+/* =========================================================================
+   MESSAGES
+   ========================================================================= */
+function scrollDown(){ const s=$('msgScroll'); requestAnimationFrame(()=>s.scrollTop=s.scrollHeight); }
+
+function addUser(text){
+  const row=document.createElement('div'); row.className='row user';
+  row.innerHTML=`<div class="bubble">${esc(text)}</div>`;
+  $('messages').appendChild(row); scrollDown();
+}
+
+function addAI(data){
+  const row=document.createElement('div'); row.className='row ai';
+  // gentle correction of the learner's previous line
+  if(data.correction){
+    const fix=document.createElement('div'); fix.className='fix';
+    fix.innerHTML=`<div class="lab">✏️ もっと自然な言い方</div>
+      <div class="corr">${esc(data.correction)}</div>
+      ${data.correction_note_ja?`<div class="note">${esc(data.correction_note_ja)}</div>`:''}`;
+    $('messages').appendChild(fix);
+  }
+  const bubble=document.createElement('div'); bubble.className='bubble';
+  bubble.innerHTML = tappable(data.reply||'');
+  const tools=document.createElement('div'); tools.className='ai-tools';
+  tools.innerHTML=`
+    <button onclick="speak(this.closest('.row').dataset.t)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 010 7"/></svg>もう一度</button>
+    ${data.reply_ja?`<button class="jaBtn" onclick="toggleJa(this)">訳を見る</button>`:''}`;
+  row.dataset.t = data.reply||'';
+  row.appendChild(bubble); row.appendChild(tools);
+  if(data.reply_ja){
+    const ja=document.createElement('div'); ja.className='ja-line'+(state.jaDefault?' show':'');
+    ja.textContent=data.reply_ja; row.appendChild(ja);
+    if(state.jaDefault){ const b=tools.querySelector('.jaBtn'); if(b){b.classList.add('act');b.textContent='訳を隠す';} }
+  }
+  $('messages').appendChild(row);
+  scrollDown();
+  if(state.voiceOn && data.reply) speak(data.reply);
+}
+
+function tappable(text){
+  // wrap each english word so the learner can tap to save it as a card
+  return esc(text).replace(/[A-Za-z][A-Za-z'’-]*/g, m=>`<w onclick="saveCard(this)">${m}</w>`);
+}
+
+function toggleJa(btn){
+  const ja=btn.closest('.row').querySelector('.ja-line');
+  const show=ja.classList.toggle('show');
+  btn.classList.toggle('act',show);
+  btn.textContent = show?'訳を隠す':'訳を見る';
+}
+
+function showTyping(){
+  const t=document.createElement('div'); t.className='typing'; t.id='typingDot';
+  t.innerHTML='<span></span><span></span><span></span>';
+  $('messages').appendChild(t); scrollDown();
+}
+function hideTyping(){ const t=$('typingDot'); if(t) t.remove(); }
+
+/* =========================================================================
+   AI RESPONSE  (SWAP: this fetch goes to Anthropic for the in-preview demo.
+   For deploy, point it at your Vercel /api/chat which calls OpenAI with your
+   server-side key, returning the same JSON shape.)
+   ========================================================================= */
+function systemPrompt(){
+  return `You are a warm, encouraging English conversation partner inside a language-learning app for a Japanese learner.
+Setting: ${state.mode.ctx}.
+Learner CEFR level: ${state.level}. Match your vocabulary, sentence length and speaking pace to this level.
+Rules:
+- Keep replies short and natural: 1–2 sentences. Ask a follow-up question to keep the chat going.
+- Stay in character for the setting. Do not lecture or break the role-play.
+- If the learner's last English message had a clear, useful error, suggest a more natural version — but keep the conversation flowing.
+Respond ONLY with a single minified JSON object, no markdown, no code fences, exactly this shape:
+{"reply":"<your English reply>","reply_ja":"<natural Japanese translation of reply>","correction":<"more natural version of the learner's last line" or null>,"correction_note_ja":<"short Japanese note" or null>}`;
+}
+
+async function getAIResponse(seedUserText, isOpener){
+  if(state.busy) return;
+  state.busy=true; updateSendState();
+  if(seedUserText){ state.convo.push({role:'user', content:seedUserText}); }
+  showTyping();
+  try{
+    const res = await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        model:"claude-sonnet-4-6",
+        max_tokens:1000,
+        system:systemPrompt(),
+        messages: state.convo.map(m=>({role:m.role, content:m.content}))
+      })
+    });
+    const json = await res.json();
+    let txt = (json.content||[]).map(b=>b.type==='text'?b.text:'').join('').trim();
+    const data = parseJSON(txt);
+    hideTyping();
+    state.convo.push({role:'assistant', content:data.reply||txt});
+    addAI(data);
+  }catch(e){
+    hideTyping();
+    const row=document.createElement('div'); row.className='row ai';
+    row.innerHTML=`<div class="bubble" style="color:var(--danger)">うまく返答できなかった。もう一度送ってみて。</div>`;
+    $('messages').appendChild(row); scrollDown();
+  }finally{
+    state.busy=false; updateSendState();
+  }
+}
+
+function parseJSON(txt){
+  let t = txt.replace(/```json/gi,'').replace(/```/g,'').trim();
+  const m = t.match(/\{[\s\S]*\}/);
+  if(m) t=m[0];
+  try{ const o=JSON.parse(t); if(o && o.reply) return o; }catch(e){}
+  return {reply:txt||'Sorry, could you say that again?', reply_ja:'', correction:null, correction_note_ja:null};
+}
+
+/* =========================================================================
+   SEND (typed)  /  MIC (speech-to-text)
+   ========================================================================= */
+function updateSendState(){
+  const v=$('textIn').value.trim();
+  $('sendBtn').disabled = !v || state.busy;
+}
+$('textIn').addEventListener('input', updateSendState);
+
+function sendTyped(){
+  const v=$('textIn').value.trim();
+  if(!v || state.busy) return;
+  $('textIn').value=''; updateSendState();
+  handleUserText(v);
+}
+function handleUserText(text){
+  addUser(text);
+  state.convo.push({role:'user', content:text});
+  // (convo already has user; getAIResponse called with no seed)
+  getAIResponse(null,false);
+}
+
+/* SWAP: Web Speech API works in a browser tab but NOT in an installed iOS PWA.
+   For deploy, record mic audio and POST to a cloud STT (Whisper) instead. */
+let recog=null, recogSupported = ('webkitSpeechRecognition' in window)||('SpeechRecognition' in window);
+function setupRecog(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recog = new SR();
+  recog.lang='en-US'; recog.interimResults=true; recog.continuous=false; recog.maxAlternatives=1;
+  let finalText='';
+  recog.onresult = e=>{
+    let interim='';
+    finalText='';
+    for(let i=0;i<e.results.length;i++){
+      const r=e.results[i];
+      if(r.isFinal) finalText+=r[0].transcript; else interim+=r[0].transcript;
+    }
+    const im=$('interim');
+    im.textContent = (finalText||interim) ? '“'+(finalText||interim)+'”' : '';
+    im.classList.toggle('show', !!(finalText||interim));
+  };
+  recog.onend = ()=>{
+    setMicUI(false);
+    $('interim').classList.remove('show'); $('interim').textContent='';
+    const t=finalText.trim();
+    if(t) handleUserText(t);
+  };
+  recog.onerror = ev=>{
+    setMicUI(false);
+    if(ev.error==='not-allowed'||ev.error==='service-not-allowed')
+      toast('マイクが使えない。入力欄から打ってもOK');
+    else if(ev.error==='no-speech') toast('聞き取れなかった。もう一度どうぞ');
+  };
+}
+function setMicUI(live){
+  state.listening=live;
+  $('micBtn').classList.toggle('live',live);
+  $('micWrap').classList.toggle('live',live);
+}
+function toggleMic(){
+  if(!recogSupported){ toast('この環境は音声入力に未対応。入力欄を使ってね'); $('textIn').focus(); return; }
+  if(state.busy) return;
+  if(state.listening){ stopMic(); return; }
+  if(!recog) setupRecog();
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+  try{ recog.start(); setMicUI(true); }catch(e){ /* already started */ }
+}
+function stopMic(){ if(recog && state.listening){ try{recog.stop();}catch(e){} } setMicUI(false); }
+
+/* =========================================================================
+   TTS  (SWAP: browser voices are free but robotic. Optional: cloud TTS.)
+   ========================================================================= */
+let enVoice=null;
+function pickVoice(){
+  if(!('speechSynthesis' in window)) return;
+  const vs=speechSynthesis.getVoices();
+  enVoice = vs.find(v=>/en[-_]US/i.test(v.lang) && /female|samantha|google US|aria|jenny/i.test(v.name))
+         || vs.find(v=>/en[-_]US/i.test(v.lang)) || vs.find(v=>/^en/i.test(v.lang)) || null;
+}
+if('speechSynthesis' in window){ speechSynthesis.onvoiceschanged=pickVoice; pickVoice(); }
+function speak(text){
+  if(!state.voiceOn || !('speechSynthesis' in window) || !text) return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='en-US'; u.rate=state.rate; u.pitch=1; if(enVoice) u.voice=enVoice;
+  speechSynthesis.speak(u);
+}
+
+/* =========================================================================
+   CARDS  (mirrors Sprout's card model; this list is the Sprout sync point)
+   ========================================================================= */
+async function saveCard(elm){
+  const word = elm.textContent.trim();
+  if(!word || elm.classList.contains('saved')) return;
+  if(state.cards.some(c=>c.word.toLowerCase()===word.toLowerCase())){ toast('もう保存済み'); elm.classList.add('saved'); return; }
+  elm.classList.add('saved');
+  toast('“'+word+'” を調べてカード化中…');
+  let data={word, pos:'', meaning_ja:'', example_en:'', example_ja:''};
+  try{
+    const res=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ model:"claude-sonnet-4-6", max_tokens:1000,
+        system:'You build vocabulary flashcards for Japanese learners. Respond ONLY with one minified JSON object, no markdown: {"word":"<base form>","pos":"<品詞 in Japanese, e.g. 名詞/動詞/形容詞/副詞/熟語>","meaning_ja":"<concise Japanese meaning>","example_en":"<one short natural example sentence>","example_ja":"<its Japanese translation>"}',
+        messages:[{role:'user', content:`Word/phrase: "${word}"`}] })
+    });
+    const j=await res.json();
+    let txt=(j.content||[]).map(b=>b.type==='text'?b.text:'').join('').trim();
+    const o=parseCard(txt); if(o) data=Object.assign(data,o);
+  }catch(e){ /* keep minimal card */ }
+  state.cards.unshift({ id:Date.now()+'_'+Math.random().toString(36).slice(2,6),
+    word:data.word||word, pos:data.pos||'', meaning_ja:data.meaning_ja||'(あとで追記)',
+    example_en:data.example_en||'', example_ja:data.example_ja||'',
+    created:Date.now(), srs:{level:0, next:Date.now()} });
+  toast('カードに追加した');
+  if(state.tab==='cards') renderCards();
+}
+function parseCard(txt){
+  let t=txt.replace(/```json/gi,'').replace(/```/g,'').trim();
+  const m=t.match(/\{[\s\S]*\}/); if(m)t=m[0];
+  try{ return JSON.parse(t); }catch(e){ return null; }
+}
+
+function renderCards(){
+  $('cardCount').textContent = state.cards.length;
+  const start=new Date(); start.setHours(0,0,0,0);
+  $('todayCount').textContent = state.cards.filter(c=>c.created>=start.getTime()).length;
+  const list=$('cardList');
+  if(!state.cards.length){
+    list.innerHTML=`<div class="empty"><div class="ei">🌱</div><h3>まだカードがないよ</h3><p>会話中にAIの返答の単語をタップすると、<br>意味と例文つきでここに貯まる。</p></div>`;
+    return;
+  }
+  list.innerHTML = state.cards.map(c=>`
+    <div class="card">
+      <button class="del" onclick="delCard('${c.id}')" aria-label="削除"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      <div><span class="w">${esc(c.word)}</span>${c.pos?`<span class="pos">${esc(c.pos)}</span>`:''}</div>
+      <div class="m">${esc(c.meaning_ja)}</div>
+      ${c.example_en?`<div class="ex"><span class="en">${esc(c.example_en)}</span><br>${esc(c.example_ja||'')}</div>`:''}
+    </div>`).join('');
+}
+function delCard(id){ state.cards=state.cards.filter(c=>c.id!==id); renderCards(); }
+function syncStub(){ toast('本番ではここでSproutのカードと双方向同期'); }
+
+/* =========================================================================
+   SETTINGS
+   ========================================================================= */
+const LEVELS=['A2','B1','B2','C1'];
+function buildLevelSeg(){
+  $('levelSeg').innerHTML = LEVELS.map(l=>`<button class="${l===state.level?'on':''}" onclick="setLevel('${l}')">${l}</button>`).join('');
+}
+function setLevel(l){
+  state.level=l;
+  $('levelChip').textContent=l;
+  if(state.mode) $('chatLevel').textContent='Level '+l;
+  buildLevelSeg();
+  toast('レベルを '+l+' に');
+}
+function toggleVoice(){
+  state.voiceOn=!state.voiceOn;
+  if(!state.voiceOn && 'speechSynthesis' in window) speechSynthesis.cancel();
+  syncSettingsUI();
+}
+function setRate(v){ state.rate=parseFloat(v); $('rateLabel').textContent=RATE_TXT(v); }
+function toggleJaDefault(){ state.jaDefault=!state.jaDefault; syncSettingsUI(); }
+function syncSettingsUI(){
+  $('tgVoice').classList.toggle('on',state.voiceOn);
+  $('voiceToggle').classList.toggle('on',state.voiceOn);
+  $('tgJa').classList.toggle('on',state.jaDefault);
+  $('rateRange').value=state.rate; $('rateLabel').textContent=RATE_TXT(state.rate);
+  buildLevelSeg();
+}
+
+/* =========================================================================
+   INIT
+   ========================================================================= */
+renderModeGrid();
+buildLevelSeg();
+syncSettingsUI();
+$('levelChip').textContent=state.level;
+</script>
+</body>
+</html>
