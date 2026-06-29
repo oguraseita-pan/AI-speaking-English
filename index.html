@@ -231,7 +231,7 @@ input[type=range]{flex:1;accent-color:var(--primary)}
     <div class="scr scroll" id="screen-home"><div class="pad" id="homeInner"></div></div>
 
     <!-- TALK -->
-    <div class="scr" id="screen-talk">
+    <div class="scr hidden" id="screen-talk">
       <div class="pad" id="modePicker">
         <div class="hello">場面を選ぶ</div>
         <p class="hello-sub">役になりきって会話の練習ができるよ。</p>
@@ -267,10 +267,10 @@ input[type=range]{flex:1;accent-color:var(--primary)}
     </div>
 
     <!-- CARDS / NOTES -->
-    <div class="scr scroll" id="screen-cards"><div class="pad" id="cardsInner"></div></div>
+    <div class="scr scroll hidden" id="screen-cards"><div class="pad" id="cardsInner"></div></div>
 
     <!-- SETTINGS -->
-    <div class="scr scroll" id="screen-settings">
+    <div class="scr scroll hidden" id="screen-settings">
       <div class="pad">
         <div class="eyebrow">設定</div>
         <div style="margin-bottom:16px"><span class="mode-pill" id="modePill"><span class="dot"></span><span id="modeText">確認中…</span></span></div>
@@ -655,7 +655,7 @@ function syncSettingsUI(){$('tgVoice').classList.toggle('on',state.voiceOn);$('v
 function updateModePill(){const p=$('modePill'),t=$('modeText');if(!p)return;const live=MODE==='backend';p.classList.toggle('live',live);t.textContent=live?'デプロイ済み（Groq無料枠）':'プレビュー（ブラウザ音声）';}
 
 /* ---------- INIT ---------- */
-renderModeGrid();buildLevelSeg();syncSettingsUI();$('levelChip').textContent=state.level;renderHome();
+renderModeGrid();buildLevelSeg();syncSettingsUI();$('levelChip').textContent=state.level;setTab('home');
 detectMode();
 if('serviceWorker'in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));}
 </script>
