@@ -468,7 +468,18 @@ Respond ONLY with one minified JSON object, no markdown, exactly:
 function historyMsgs(){return state.history.map(t=>t.role==='user'?{role:'user',content:t.text}:{role:'assistant',content:t.data.reply});}
 async function llm(system,messages){if(MODE==='backend'){const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system,messages})});if(!r.ok)throw new Error('chat '+r.status);const j=await r.json();return j.text||'';}else{const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system,messages})});const j=await r.json();return (j.content||[]).map(b=>b.type==='text'?b.text:'').join('').trim();}}
 async function getAIResponse(){if(state.busy)return;state.busy=true;updateSendState();showTyping();try{const msgs=[{role:'user',content:state.opener},...historyMsgs()];const txt=await llm(systemPrompt(),msgs);const data=parseReply(txt);hideTyping();state.history.push({role:'ai',data});appendAIEl({role:'ai',data});}catch(e){hideTyping();const row=document.createElement('div');row.className='row ai';row.innerHTML='<div class="bubble" style="color:var(--danger)">うまく返答できなかった。もう一度送ってみて。</div>';$('messages').appendChild(row);scrollDown();if(state.handsfree)setTimeout(()=>{if(state.handsfree&&!state.busy)startListening();},700);}finally{state.busy=false;updateSendState();}}
-function parseReply(txt){const o=parseObj(txt);if(o&&o.reply)return o;return{reply:txt||'Sorry, could you say that again?',reply_ja:'',correction:null,correction_note_ja:null};}
+function parseReply(txt){
+  const o=parseObj(txt);
+  if(o&&typeof o.reply==='string'&&o.reply.trim())return{reply:o.reply,reply_ja:o.reply_ja||'',correction:o.correction||null,correction_note_ja:o.correction_note_ja||null};
+  const rep=extractReply(txt);
+  if(rep)return{reply:rep,reply_ja:extractField(txt,'reply_ja')||'',correction:extractField(txt,'correction'),correction_note_ja:extractField(txt,'correction_note_ja')};
+  let plain=String(txt).replace(/```json|```/gi,'').trim();
+  if(/^\s*\{/.test(plain))plain='';/* looks like broken JSON -> drop */
+  return{reply:plain||'Sorry, could you say that again?',reply_ja:'',correction:null,correction_note_ja:null};
+}
+function unesc(s){return String(s).replace(/\\n/g,' ').replace(/\\t/g,' ').replace(/\\"/g,'"').replace(/\\\\/g,'\\').trim();}
+function extractReply(txt){let s=String(txt);let m=s.match(/"reply"\s*:\s*"((?:[^"\\]|\\.)*)"/);if(m)return unesc(m[1]);m=s.match(/"reply"\s*:\s*"([\s\S]*)$/);if(m){let v=m[1];v=v.replace(/"\s*,\s*"reply_ja[\s\S]*$/,'').replace(/"\s*,\s*"correction[\s\S]*$/,'');v=v.replace(/["}\]\s]+$/,'');return unesc(v);}return null;}
+function extractField(txt,key){const s=String(txt);const m=s.match(new RegExp('"'+key+'"\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)"'));if(m)return unesc(m[1]);return null;}
 function parseObj(txt){let t=String(txt).replace(/```json/gi,'').replace(/```/g,'').trim();const m=t.match(/\{[\s\S]*\}/);if(m)t=m[0];try{return JSON.parse(t);}catch(e){return null;}}
 function showTyping(){const t=document.createElement('div');t.className='typing';t.id='typingDot';t.innerHTML='<span></span><span></span><span></span>';$('messages').appendChild(t);scrollDown();}
 function hideTyping(){const t=$('typingDot');if(t)t.remove();}
