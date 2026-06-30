@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
 <title>Sprout Speaking</title>
-<meta name="theme-color" content="#0E1311">
+<meta name="theme-color" content="#0F1413">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -13,209 +13,220 @@
 <meta name="apple-mobile-web-app-title" content="Sprout Speaking">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
+/* === Sprout-aligned dark palette (a touch darker than Sprout) === */
 :root{
-  --primary:#6FC28B;--primary-dark:#57A873;--primary-soft:#16271E;--primary-tint:#101A15;--primary-ink:#8FD9A6;
-  --bg:#0E1311;--surface:#181F1C;--surface-2:#222A26;--text:#EAF1ED;--muted:#9DB0A6;--faint:#6C7D74;--border:#283230;
-  --user-bubble:#6FC28B;--user-ink:#0C1410;--ai-bubble:#181F1C;--danger:#E8736A;
-  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 28px rgba(0,0,0,.45);--shadow-sm:0 1px 2px rgba(0,0,0,.35);
-  --radius:18px;--radius-sm:12px;--maxw:480px;
+  --paper:#0F1413;--surface:#181E1C;--surface-2:#202624;
+  --ink:#ECEAE2;--ink-2:#A5AFAA;--ink-3:#737E79;
+  --line:#283330;--line-2:#202824;
+  --green:#5FC08C;--green-d:#49A876;--green-soft:#16271E;--green-ink:#8FD9A6;
+  --amber:#F2B33D;--amber-soft:#2A2316;
+  --danger:#E8736A;
+  --shadow:0 1px 2px rgba(0,0,0,.35), 0 6px 18px rgba(0,0,0,.32);
+  --shadow-lg:0 8px 40px rgba(0,0,0,.5);
+  --radius:18px;--radius-sm:12px;--tabbar-h:62px;
+  --safe-b:env(safe-area-inset-bottom,0px);--safe-t:env(safe-area-inset-top,0px);
+  --font-ui:'Inter','Noto Sans JP',-apple-system,BlinkMacSystemFont,sans-serif;
+  --font-en:'Lora',Georgia,serif;
+  --maxw:480px;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0;height:100%}
-body{font-family:"Noto Sans JP",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased;overscroll-behavior:none}
+body{font-family:var(--font-ui);background:var(--paper);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;overflow:hidden;overscroll-behavior:none}
 button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
 input{font-family:inherit}
 
-/* ---- fixed app shell: never grows on input ---- */
-#app{max-width:var(--maxw);margin:0 auto;height:100%;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
-.topbar{flex:0 0 auto;z-index:20;background:rgba(14,19,17,.9);backdrop-filter:saturate(140%) blur(10px);padding:max(10px,env(safe-area-inset-top)) 16px 10px;display:flex;align-items:center;gap:9px;border-bottom:1px solid var(--border)}
-.brand{display:flex;align-items:center;gap:8px;font-weight:900;letter-spacing:-.01em;font-size:18px}
+/* shell: 100dvh flex column, tab bar flush at bottom (no gap) */
+#app{max-width:var(--maxw);margin:0 auto;height:100dvh;display:flex;flex-direction:column;overflow:hidden;background:var(--paper)}
+.topbar{flex:0 0 auto;z-index:20;display:flex;align-items:center;gap:9px;padding:max(10px,var(--safe-t)) 18px 12px;background:rgba(15,20,19,.92);backdrop-filter:saturate(160%) blur(14px);border-bottom:1px solid var(--line-2)}
+.brand{display:flex;align-items:center;gap:9px;font-family:var(--font-en);font-weight:600;font-size:19px;letter-spacing:-.01em}
+.brand .sub{font-family:var(--font-ui);font-weight:500;color:var(--ink-3);font-size:12.5px}
 .leaf{width:26px;height:26px;flex:0 0 auto}
-.brand .sub{font-weight:500;color:var(--muted);font-size:12.5px;margin-left:1px}
 .topbar .spacer{flex:1}
-.chip-btn{font-size:12.5px;font-weight:700;color:var(--primary-ink);background:var(--primary-soft);padding:6px 11px;border-radius:999px;display:flex;align-items:center;gap:5px}
-.chip-btn.ghost{background:transparent;color:var(--muted)}
+.lvchip{font-size:12px;font-weight:700;color:var(--green-ink);background:var(--green-soft);padding:6px 12px;border-radius:999px}
 .main{flex:1;min-height:0;position:relative}
 .scr{position:absolute;inset:0;display:flex;flex-direction:column}
 .scr.scroll{overflow-y:auto;-webkit-overflow-scrolling:touch}
-.pad{padding:18px 16px 26px}
-.tabbar{flex:0 0 auto;z-index:20;background:rgba(20,26,23,.94);backdrop-filter:saturate(140%) blur(10px);border-top:1px solid var(--border);display:flex;padding:6px 6px max(6px,env(safe-area-inset-bottom))}
-.tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 0;color:var(--faint);font-size:11px;font-weight:700;border-radius:12px;transition:color .15s}
-.tabbar button.active{color:var(--primary)}
+.pad{padding:16px 18px 26px}
+.tabbar{flex:0 0 auto;z-index:20;display:flex;height:calc(var(--tabbar-h) + var(--safe-b));padding-bottom:var(--safe-b);background:rgba(24,30,28,.9);backdrop-filter:saturate(160%) blur(16px);border-top:1px solid var(--line)}
+.tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--ink-3);font-size:11px;font-weight:600}
+.tabbar button.active{color:var(--green)}
 .tabbar svg{width:23px;height:23px}
 
-.eyebrow{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:2px 0 12px}
-.hello{font-size:23px;font-weight:900;letter-spacing:-.02em;margin:2px 0 3px}
-.hello-sub{color:var(--muted);font-size:14px;margin:0 0 18px}
+/* typography helpers */
+.section-title{font-weight:600;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);margin:0 2px 12px}
+.h1{font-family:var(--font-en);font-weight:600;font-size:25px;letter-spacing:-.01em;margin:2px 0 4px}
+.sub{color:var(--ink-2);font-size:14px;margin:0 0 18px}
+.en{font-family:var(--font-en)}
 
-/* ---- HOME ---- */
-.home-stats{display:flex;gap:10px;margin-bottom:18px}
-.hstat{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 13px;box-shadow:var(--shadow-sm)}
-.hstat .n{font-size:22px;font-weight:900;letter-spacing:-.02em;line-height:1;color:var(--primary-ink)}
-.hstat .l{font-size:11px;color:var(--muted);margin-top:4px}
-.hero{position:relative;overflow:hidden;border-radius:22px;padding:20px 18px 18px;background:linear-gradient(150deg,#1E7A4E 0%,#176544 55%,#123E2E 100%);box-shadow:var(--shadow);margin-bottom:22px}
-.hero::after{content:"";position:absolute;right:-30px;top:-30px;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,.08)}
-.hero .tag{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:#D8F3E2;background:rgba(255,255,255,.14);padding:5px 11px;border-radius:999px;margin-bottom:13px}
-.hero .q{font-size:20px;font-weight:900;color:#fff;line-height:1.4;letter-spacing:-.01em;position:relative;z-index:1}
-.hero .qja{font-size:13px;color:#D6EFE0;margin-top:8px;position:relative;z-index:1}
-.hero .go{margin-top:16px;width:100%;background:#fff;color:#15241C;font-weight:800;font-size:15px;padding:13px;border-radius:13px;display:flex;align-items:center;justify-content:center;gap:7px;position:relative;z-index:1}
-.hero .go:active{transform:scale(.985)}
-.sec-h{font-size:13.5px;font-weight:800;margin:0 0 11px;letter-spacing:-.01em}
-.chips{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:22px}
-.chip{display:flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:11px 13px;font-size:13.5px;font-weight:700;box-shadow:var(--shadow-sm)}
-.chip:active{transform:scale(.97)}
-.chip .e{font-size:17px}
-.resume{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px;box-shadow:var(--shadow-sm);margin-bottom:22px}
-.resume .ri{width:40px;height:40px;border-radius:11px;background:var(--primary-soft);display:flex;align-items:center;justify-content:center;font-size:20px;flex:0 0 auto}
-.resume .rt{font-weight:700;font-size:14px}.resume .rd{font-size:11.5px;color:var(--muted)}
-.resume .arr{margin-left:auto;color:var(--primary)}
+/* buttons / cards (Sprout-style) */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;font-weight:600;font-size:15px;padding:13px 16px;border-radius:13px;transition:transform .12s}
+.btn:active{transform:scale(.98)}
+.btn-primary{background:var(--green);color:#06140E}
+.btn-ghost{background:var(--surface);box-shadow:var(--shadow);color:var(--ink)}
+.btn.full{width:100%}
+.card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+.pos-chip{display:inline-block;font-size:11.5px;font-weight:600;background:var(--green-soft);color:var(--green-ink);padding:3px 11px;border-radius:20px}
 
-/* ---- TALK: mode picker ---- */
+/* HOME */
+.home-stats{display:flex;gap:11px;margin-bottom:18px}
+.hstat{flex:1;background:var(--surface);border-radius:14px;box-shadow:var(--shadow);padding:13px 14px}
+.hstat .n{font-family:var(--font-en);font-size:25px;font-weight:600;line-height:1;color:var(--green-ink)}
+.hstat .l{font-size:11px;color:var(--ink-3);margin-top:5px}
+.hero{position:relative;overflow:hidden;border-radius:22px;padding:20px 18px;background:linear-gradient(155deg,#1F5A47 0%,#17463A 55%,#102E28 100%);box-shadow:var(--shadow);margin-bottom:22px}
+.hero::after{content:"";position:absolute;right:-34px;top:-34px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(95,192,140,.28),transparent 70%)}
+.hero .tag{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:#CFEFDD;background:rgba(255,255,255,.13);padding:5px 11px;border-radius:999px;margin-bottom:13px}
+.hero .q{font-family:var(--font-en);font-size:21px;font-weight:500;color:#fff;line-height:1.42;position:relative;z-index:1}
+.hero .qja{font-size:13px;color:#CBE7D7;margin-top:9px;position:relative;z-index:1}
+.hero .go{margin-top:17px;background:#fff;color:#0E2A1F;position:relative;z-index:1}
+.chips{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:8px}
+.chip{display:flex;align-items:center;gap:7px;background:var(--surface);box-shadow:var(--shadow);border-radius:13px;padding:11px 14px;font-size:13.5px;font-weight:600}
+.chip:active{transform:scale(.97)}.chip .e{font-size:17px}
+.resume{display:flex;align-items:center;gap:12px;background:var(--surface);box-shadow:var(--shadow);border-radius:16px;padding:14px;margin-bottom:22px;width:100%;text-align:left}
+.resume .ri{width:42px;height:42px;border-radius:12px;background:var(--green-soft);display:flex;align-items:center;justify-content:center;font-size:20px;flex:0 0 auto}
+.resume .rt{font-weight:700;font-size:14px}.resume .rd{font-size:11.5px;color:var(--ink-3)}
+.resume .arr{margin-left:auto;color:var(--green)}
+
+/* TALK: mode picker */
 #modePicker{flex:1;min-height:0;overflow-y:auto}
 .mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
-.mode-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:15px 14px;text-align:left;box-shadow:var(--shadow-sm);transition:transform .12s;display:flex;flex-direction:column;gap:9px;min-height:104px}
+.mode-card{background:var(--surface);box-shadow:var(--shadow);border-radius:var(--radius);padding:15px 14px;text-align:left;transition:transform .12s;display:flex;flex-direction:column;gap:9px;min-height:106px}
 .mode-card:active{transform:scale(.975)}
-.mode-card .ic{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:21px;background:var(--primary-soft)}
-.mode-card .mt{font-weight:700;font-size:14.5px;line-height:1.35}
-.mode-card .md{font-size:11.5px;color:var(--muted);line-height:1.4;margin-top:-4px}
-.mode-card.free{grid-column:1/-1;flex-direction:row;align-items:center;min-height:0;background:linear-gradient(135deg,#1E7A4E,#2FA869);border-color:transparent}
-.mode-card.free .ic{background:rgba(255,255,255,.18)}
-.mode-card.free .mt{color:#fff}.mode-card.free .md{color:#EAF7EF;opacity:.9}
-.mode-card.free .arr{margin-left:auto;color:#fff;opacity:.9}
+.mode-card .ic{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:21px;background:var(--green-soft)}
+.mode-card .mt{font-weight:700;font-size:14.5px}.mode-card .md{font-size:11.5px;color:var(--ink-3);margin-top:-3px}
+.mode-card.free{grid-column:1/-1;flex-direction:row;align-items:center;min-height:0;background:linear-gradient(135deg,#1F6A52,#49A876)}
+.mode-card.free .ic{background:rgba(255,255,255,.2)}
+.mode-card.free .mt{color:#fff}.mode-card.free .md{color:#E7F6EE}
+.mode-card.free .arr{margin-left:auto;color:#fff}
 
-/* ---- TALK: chat ---- */
+/* TALK: chat */
 #chatView{flex:1;min-height:0;display:flex;flex-direction:column}
-.chat-head{flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--border);background:var(--bg)}
-.chat-head .back,.chat-head .mute{width:34px;height:34px;border-radius:10px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center}
+.chat-head{flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--line-2);background:var(--paper)}
+.chat-head .ic-btn{width:34px;height:34px;border-radius:10px;background:var(--surface);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;color:var(--ink-2)}
 .chat-head .ttl{font-weight:700;font-size:15px;line-height:1.2}
-.chat-head .lv{font-size:11.5px;color:var(--muted)}
-.chat-head .mute{margin-left:auto;color:var(--muted)}
-.chat-head .mute.on{color:var(--primary);background:var(--primary-soft);border-color:transparent}
+.chat-head .lv{font-size:11.5px;color:var(--ink-3)}
+.chat-head .right{margin-left:auto;display:flex;gap:8px}
+.chat-head .ic-btn.on{color:var(--green);background:var(--green-soft);box-shadow:none}
 #msgScroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
-.messages{padding:16px 14px 10px;display:flex;flex-direction:column;gap:13px}
+.messages{padding:16px 14px 8px;display:flex;flex-direction:column;gap:13px}
 .row{display:flex;flex-direction:column;max-width:88%}
-.row.user{align-self:flex-end;align-items:flex-end}
-.row.ai{align-self:flex-start;align-items:flex-start}
-.bubble{padding:11px 14px;border-radius:16px;font-size:15px;line-height:1.55;word-break:break-word}
-.row.user .bubble{background:var(--user-bubble);color:var(--user-ink);font-weight:500;border-bottom-right-radius:5px}
-.row.ai .bubble{background:var(--ai-bubble);border:1px solid var(--border);border-bottom-left-radius:5px;box-shadow:var(--shadow-sm)}
+.row.user{align-self:flex-end;align-items:flex-end}.row.ai{align-self:flex-start;align-items:flex-start}
+.bubble{padding:11px 15px;border-radius:17px;font-size:15px;line-height:1.55;word-break:break-word}
+.row.user .bubble{background:var(--green);color:#06140E;font-weight:500;border-bottom-right-radius:5px}
+.row.ai .bubble{background:var(--surface);box-shadow:var(--shadow);border-bottom-left-radius:5px;font-family:var(--font-en);font-size:15.5px;letter-spacing:.005em}
 .row.ai .bubble w{cursor:pointer;border-radius:4px;padding:0 1px;transition:background .1s}
-.row.ai .bubble w.sel{background:var(--primary);color:var(--user-ink)}
-.redo{margin-top:5px;font-size:11px;font-weight:700;color:var(--faint);display:flex;align-items:center;gap:4px;padding:2px 4px}
-.redo:active{color:var(--primary-ink)}
+.row.ai .bubble w.sel{background:var(--green);color:#06140E}
+.redo{margin-top:5px;font-size:11px;font-weight:600;color:var(--ink-3);display:flex;align-items:center;gap:4px;padding:2px 4px}
+.redo:active{color:var(--green-ink)}
 .ai-tools{display:flex;gap:14px;margin-top:7px;padding-left:3px}
-.ai-tools button{font-size:11.5px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:4px}
-.ai-tools button.act{color:var(--primary-ink)}
-.ja-line{font-size:13px;color:var(--muted);margin-top:7px;padding-top:7px;border-top:1px dashed var(--border);display:none}
+.ai-tools button{font-size:11.5px;font-weight:600;color:var(--ink-3);display:flex;align-items:center;gap:4px}
+.ai-tools button.act{color:var(--green-ink)}
+.ja-line{font-size:13px;color:var(--ink-2);margin-top:7px;padding-top:7px;border-top:1px dashed var(--line);display:none}
 .ja-line.show{display:block}
-.fix{align-self:flex-start;background:#241D12;border:1px solid #4A3A18;border-radius:12px;padding:8px 11px;font-size:12.5px;margin-top:2px;max-width:88%}
-.fix .lab{font-weight:700;color:#E2AC5E;display:flex;align-items:center;gap:5px;margin-bottom:2px}
-.fix .corr{color:#EFD9AE;font-weight:600}.fix .note{color:#BBA078;font-size:11.5px;margin-top:2px}
-.typing{display:flex;gap:4px;padding:13px 15px;background:var(--ai-bubble);border:1px solid var(--border);border-radius:16px;border-bottom-left-radius:5px;width:fit-content}
-.typing span{width:7px;height:7px;border-radius:50%;background:var(--faint);animation:bob 1.1s infinite}
+.fix{align-self:flex-start;background:var(--amber-soft);border:1px solid #4A3D1C;border-radius:12px;padding:8px 12px;font-size:12.5px;margin-top:2px;max-width:88%}
+.fix .lab{font-weight:700;color:var(--amber);display:flex;align-items:center;gap:5px;margin-bottom:2px}
+.fix .corr{color:#EFD9AE;font-weight:600;font-family:var(--font-en)}.fix .note{color:#BBA078;font-size:11.5px;margin-top:2px}
+.typing{display:flex;gap:4px;padding:13px 15px;background:var(--surface);box-shadow:var(--shadow);border-radius:17px;border-bottom-left-radius:5px;width:fit-content}
+.typing span{width:7px;height:7px;border-radius:50%;background:var(--ink-3);animation:bob 1.1s infinite}
 .typing span:nth-child(2){animation-delay:.15s}.typing span:nth-child(3){animation-delay:.3s}
 @keyframes bob{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
-.hint{text-align:center;color:var(--faint);font-size:11.5px;padding:4px 20px 0}
+.hint{text-align:center;color:var(--ink-3);font-size:11.5px;padding:4px 20px 0}
 
-/* ---- TALK: dock (mic at bottom, layout stable) ---- */
-.dock{flex:0 0 auto;background:var(--bg);border-top:1px solid var(--border);padding:6px 14px max(5px,env(safe-area-inset-bottom))}
-.selbar{display:none;align-items:center;gap:8px;background:var(--primary-soft);border:1px solid var(--border);border-radius:12px;padding:7px 8px 7px 12px;margin-bottom:9px}
+/* dock */
+.dock{flex:0 0 auto;background:var(--paper);border-top:1px solid var(--line-2);padding:7px 14px max(7px,var(--safe-b))}
+.hfbanner{display:none;align-items:center;gap:9px;background:var(--green-soft);border:1px solid var(--green-d);border-radius:12px;padding:8px 9px 8px 13px;margin-bottom:8px}
+.hfbanner.show{display:flex}
+.hfbanner .t{flex:1;font-size:12px;color:var(--green-ink);font-weight:600}
+.hfbanner .stop{font-size:12px;font-weight:700;color:var(--danger);padding:5px 10px;border-radius:8px;background:rgba(232,115,106,.12)}
+.selbar{display:none;align-items:center;gap:8px;background:var(--green-soft);border:1px solid var(--line);border-radius:12px;padding:7px 8px 7px 12px;margin-bottom:8px}
 .selbar.show{display:flex}
-.selbar .txt{flex:1;font-size:13px;color:var(--primary-ink);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.selbar .lk{background:var(--primary);color:var(--user-ink);font-weight:800;font-size:12.5px;padding:6px 12px;border-radius:9px;flex:0 0 auto}
-.selbar .all,.selbar .cl{color:var(--muted);font-size:12px;font-weight:700;padding:6px 6px;flex:0 0 auto}
-.interim{font-size:13px;color:var(--primary-ink);text-align:center;min-height:0;height:0;overflow:hidden;transition:height .15s}
+.selbar .txt{flex:1;font-size:13px;color:var(--green-ink);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--font-en)}
+.selbar .lk{background:var(--green);color:#06140E;font-weight:700;font-size:12.5px;padding:6px 12px;border-radius:9px}
+.selbar .all,.selbar .cl{color:var(--ink-2);font-size:12px;font-weight:600;padding:6px}
+.interim{font-size:13px;color:var(--green-ink);text-align:center;height:0;overflow:hidden;transition:height .15s}
 .interim.show{height:22px;margin-bottom:5px}
-.input-row{display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:4px 5px 4px 16px}
-.input-row input{flex:1;border:none;outline:none;background:none;font-size:15px;padding:8px 0;min-width:0;color:var(--text)}
-.input-row input::placeholder{color:var(--faint)}
-.send{width:36px;height:36px;border-radius:50%;background:var(--primary-soft);color:var(--primary-ink);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.input-row{display:flex;align-items:center;gap:9px;background:var(--surface);box-shadow:var(--shadow);border-radius:999px;padding:4px 5px 4px 16px}
+.input-row input{flex:1;border:none;outline:none;background:none;font-size:15px;padding:9px 0;min-width:0;color:var(--ink)}
+.input-row input::placeholder{color:var(--ink-3)}
+.send{width:38px;height:38px;border-radius:50%;background:var(--green-soft);color:var(--green-ink);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
 .send:disabled{opacity:.35}
 .mic-dock{display:flex;justify-content:center;margin-top:8px}
 .mic-wrap{position:relative}
-.mic{width:62px;height:62px;border-radius:50%;background:var(--primary);color:var(--user-ink);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(111,194,139,.32);position:relative;z-index:2;transition:transform .12s}
+.mic{width:62px;height:62px;border-radius:50%;background:var(--green);color:#06140E;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(95,192,140,.3);position:relative;z-index:2;transition:transform .12s}
 .mic:active{transform:scale(.93)}
 .mic.live{background:var(--danger);color:#fff;box-shadow:0 6px 20px rgba(232,115,106,.4)}
 .mic-wrap.live::before,.mic-wrap.live::after{content:"";position:absolute;inset:0;border-radius:50%;background:var(--danger);opacity:.3;animation:ring 1.8s ease-out infinite;z-index:1}
 .mic-wrap.live::after{animation-delay:.9s}
 @keyframes ring{0%{transform:scale(1);opacity:.3}100%{transform:scale(2);opacity:0}}
-.mic-label{text-align:center;font-size:10.5px;color:var(--faint);margin-top:4px}
+.mic-label{text-align:center;font-size:10.5px;color:var(--ink-3);margin-top:5px}
 
-/* ---- bottom sheet (lookup) ---- */
-.sheet-bg{position:absolute;inset:0;background:rgba(0,0,0,.5);z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
+/* lookup sheet */
+.sheet-bg{position:absolute;inset:0;background:rgba(0,0,0,.55);z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
 .sheet-bg.show{opacity:1;pointer-events:auto}
-.sheet{visibility:hidden;position:absolute;left:0;right:0;bottom:0;z-index:41;background:var(--surface);border-top-left-radius:22px;border-top-right-radius:22px;border-top:1px solid var(--border);padding:8px 18px max(20px,env(safe-area-inset-bottom));transform:translateY(110%);transition:transform .26s cubic-bezier(.2,.8,.2,1);max-height:80%;overflow-y:auto}
+.sheet{visibility:hidden;position:absolute;left:0;right:0;bottom:0;z-index:41;background:var(--surface);border-radius:22px 22px 0 0;border-top:1px solid var(--line);padding:8px 18px max(20px,var(--safe-b));transform:translateY(115%);transition:transform .26s cubic-bezier(.2,.8,.2,1),visibility .26s;max-height:82%;overflow-y:auto}
 .sheet.show{visibility:visible;transform:translateY(0)}
-.sheet .grip{width:38px;height:4px;border-radius:2px;background:var(--border);margin:6px auto 14px}
-.seg{display:inline-flex;gap:4px;background:var(--bg);padding:4px;border-radius:11px;margin-bottom:14px}
-.seg button{padding:6px 13px;border-radius:8px;font-size:13px;font-weight:700;color:var(--muted)}
-.seg button.on{background:var(--surface-2);color:var(--primary-ink)}
-.sheet .front{font-size:22px;font-weight:900;letter-spacing:-.01em;line-height:1.3}
-.sheet .sub{font-size:12px;color:var(--primary-ink);background:var(--primary-soft);padding:2px 8px;border-radius:7px;font-weight:700;margin-left:8px;vertical-align:3px}
+.sheet .grip{width:38px;height:4px;border-radius:2px;background:var(--line);margin:6px auto 14px}
+.seg{display:inline-flex;gap:4px;background:var(--paper);padding:4px;border-radius:11px;margin-bottom:14px}
+.seg button{padding:6px 13px;border-radius:8px;font-size:13px;font-weight:600;color:var(--ink-3)}
+.seg button.on{background:var(--surface-2);color:var(--green-ink)}
+.sheet .front{font-family:var(--font-en);font-size:23px;font-weight:500;line-height:1.3}
 .sheet .mean{font-size:15.5px;margin-top:12px}
-.sheet .ex{font-size:13.5px;color:var(--muted);margin-top:12px;padding-top:12px;border-top:1px dashed var(--border)}
-.sheet .ex .en{color:var(--text)}
-.sheet .note{font-size:13px;color:var(--muted);margin-top:10px;line-height:1.6}
-.sheet .loading{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:14px;padding:18px 0}
-.sheet .save{margin-top:18px;width:100%;background:var(--primary);color:var(--user-ink);font-weight:800;font-size:15.5px;padding:14px;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:8px}
-.sheet .save:active{transform:scale(.985)}
-.sheet .save.done{background:var(--primary-soft);color:var(--primary-ink)}
-.mini-spin{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite}
+.sheet .ex{font-size:13.5px;color:var(--ink-2);margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+.sheet .ex .e2{color:var(--ink);font-family:var(--font-en)}
+.sheet .note2{font-size:13px;color:var(--ink-2);margin-top:10px;line-height:1.6}
+.sheet .loading{display:flex;align-items:center;gap:10px;color:var(--ink-3);font-size:14px;padding:18px 0}
+.sheet .save{margin-top:18px;width:100%;background:var(--green);color:#06140E;font-weight:700;font-size:15.5px;padding:14px;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:8px}
+.sheet .save:active{transform:scale(.985)}.sheet .save.done{background:var(--green-soft);color:var(--green-ink)}
+.mini-spin{width:18px;height:18px;border:2px solid var(--line);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* ---- CARDS / NOTES (Sprout-style) ---- */
+/* NOTES */
 .note-folders{display:flex;flex-direction:column;gap:11px}
-.folder{display:flex;align-items:center;gap:13px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:15px;box-shadow:var(--shadow-sm)}
+.folder{display:flex;align-items:center;gap:13px;background:var(--surface);box-shadow:var(--shadow);border-radius:16px;padding:15px;width:100%;text-align:left}
 .folder:active{transform:scale(.985)}
-.folder .fi{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:21px;background:var(--primary-soft);flex:0 0 auto}
-.folder .ft{font-weight:700;font-size:15.5px}
-.folder .fd{font-size:12px;color:var(--muted)}
-.folder .fc{margin-left:auto;font-size:13px;font-weight:800;color:var(--primary-ink);background:var(--bg);min-width:34px;text-align:center;padding:5px 9px;border-radius:9px}
+.folder .fi{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:21px;background:var(--green-soft);flex:0 0 auto}
+.folder .ft{font-weight:700;font-size:15.5px}.folder .fd{font-size:12px;color:var(--ink-3)}
+.folder .fc{margin-left:auto;font-family:var(--font-en);font-size:15px;font-weight:600;color:var(--green-ink);min-width:34px;text-align:center}
 .crumb{display:flex;align-items:center;gap:8px;margin-bottom:16px}
-.crumb .bk{width:32px;height:32px;border-radius:9px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center}
-.crumb .ct{font-size:14px;font-weight:700}
-.crumb .ct .g{color:var(--faint)}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 15px;box-shadow:var(--shadow-sm);margin-bottom:10px;position:relative}
-.card .w{font-size:16.5px;font-weight:700}
-.card .pos{font-size:11px;color:var(--primary-ink);background:var(--primary-soft);padding:2px 7px;border-radius:6px;margin-left:7px;vertical-align:2px;font-weight:700}
-.card .m{font-size:14px;margin-top:5px}
-.card .ex{font-size:12.5px;color:var(--muted);margin-top:7px;padding-top:8px;border-top:1px dashed var(--border)}
-.card .ex .en{color:var(--text)}
-.card .del{position:absolute;top:11px;right:11px;width:26px;height:26px;border-radius:8px;color:var(--faint);display:flex;align-items:center;justify-content:center}
-.empty{text-align:center;padding:54px 26px;color:var(--muted)}
-.empty .ei{width:62px;height:62px;border-radius:18px;background:var(--primary-soft);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:28px}
-.empty h3{font-size:16px;font-weight:700;color:var(--text);margin:0 0 5px}.empty p{font-size:13.5px;margin:0;line-height:1.6}
+.crumb .bk{width:32px;height:32px;border-radius:9px;background:var(--surface);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center}
+.crumb .ct{font-size:14px;font-weight:700}.crumb .ct .g{color:var(--ink-3)}
+.ncard{background:var(--surface);box-shadow:var(--shadow);border-radius:var(--radius);padding:14px 15px;margin-bottom:10px;position:relative}
+.ncard .w{font-family:var(--font-en);font-size:18px;font-weight:500}
+.ncard .pos{margin-left:7px;vertical-align:2px}
+.ncard .m{font-size:14px;margin-top:6px}
+.ncard .ex{font-size:12.5px;color:var(--ink-2);margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
+.ncard .ex .e2{color:var(--ink);font-family:var(--font-en)}
+.ncard .del{position:absolute;top:11px;right:11px;width:26px;height:26px;border-radius:8px;color:var(--ink-3);display:flex;align-items:center;justify-content:center}
+.empty{text-align:center;padding:54px 26px;color:var(--ink-3)}
+.empty .ei{width:62px;height:62px;border-radius:18px;background:var(--green-soft);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:28px}
+.empty h3{font-size:16px;font-weight:700;color:var(--ink);margin:0 0 5px}.empty p{font-size:13.5px;margin:0;line-height:1.6}
 
-/* ---- SETTINGS ---- */
-.set-group{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-sm);margin-bottom:16px}
-.set-row{display:flex;align-items:center;gap:12px;padding:14px 15px;border-bottom:1px solid var(--border)}
+/* SETTINGS */
+.set-group{background:var(--surface);box-shadow:var(--shadow);border-radius:var(--radius);overflow:hidden;margin-bottom:16px}
+.set-row{display:flex;align-items:center;gap:12px;padding:14px 15px;border-bottom:1px solid var(--line-2)}
 .set-row:last-child{border-bottom:none}
-.set-row .info{flex:1}.set-row .t{font-size:14.5px;font-weight:500}.set-row .d{font-size:11.5px;color:var(--muted);margin-top:1px}
-.seg2{display:flex;gap:5px;background:var(--bg);padding:4px;border-radius:11px}
-.seg2 button{padding:6px 11px;border-radius:8px;font-size:13px;font-weight:700;color:var(--muted)}
-.seg2 button.on{background:var(--surface-2);color:var(--primary-ink);box-shadow:var(--shadow-sm)}
+.set-row .info{flex:1}.set-row .t{font-size:14.5px;font-weight:500}.set-row .d{font-size:11.5px;color:var(--ink-3);margin-top:1px}
+.seg2{display:flex;gap:5px;background:var(--paper);padding:4px;border-radius:11px}
+.seg2 button{padding:6px 11px;border-radius:8px;font-size:13px;font-weight:600;color:var(--ink-3)}
+.seg2 button.on{background:var(--surface-2);color:var(--green-ink)}
 .toggle{width:46px;height:28px;border-radius:999px;background:var(--surface-2);position:relative;transition:background .18s;flex:0 0 auto}
-.toggle.on{background:var(--primary)}
+.toggle.on{background:var(--green)}
 .toggle::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .18s}
 .toggle.on::after{transform:translateX(18px)}
-input[type=range]{flex:1;accent-color:var(--primary)}
-.note-box{font-size:12px;color:var(--muted);line-height:1.6;background:var(--primary-tint);border:1px solid var(--border);border-radius:14px;padding:13px 14px}
-.note-box b{color:var(--text)}.note-box code{background:var(--surface-2);padding:1px 5px;border-radius:5px;font-size:11px}
-.mode-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--surface-2);color:var(--muted)}
-.mode-pill .dot{width:7px;height:7px;border-radius:50%;background:var(--faint)}
-.mode-pill.live .dot{background:var(--primary)}
-
+input[type=range]{flex:1;accent-color:var(--green)}
 .tone-list{display:flex;flex-direction:column;gap:7px}
-.tone-opt{display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:11px 12px;text-align:left;width:100%}
-.tone-opt.on{border-color:var(--primary);background:var(--primary-soft)}
-.tone-opt .ti{flex:1}
-.tone-opt .tn{font-size:14px;font-weight:700}
-.tone-opt .td{font-size:11.5px;color:var(--muted);margin-top:1px}
-.tone-opt .tc{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);flex:0 0 auto;display:flex;align-items:center;justify-content:center}
-.tone-opt.on .tc{border-color:var(--primary);background:var(--primary);color:var(--user-ink)}
-#toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%) translateY(20px);z-index:60;background:#04100A;border:1px solid var(--border);color:#fff;font-size:13px;font-weight:600;padding:10px 16px;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-width:88%;text-align:center}
+.tone-opt{display:flex;align-items:center;gap:10px;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:11px 12px;text-align:left;width:100%}
+.tone-opt.on{border-color:var(--green);background:var(--green-soft)}
+.tone-opt .tn{font-size:14px;font-weight:700}.tone-opt .td{font-size:11.5px;color:var(--ink-3);margin-top:1px}
+.tone-opt .tc{width:20px;height:20px;border-radius:50%;border:2px solid var(--line);flex:0 0 auto;display:flex;align-items:center;justify-content:center}
+.tone-opt.on .tc{border-color:var(--green);background:var(--green);color:#06140E}
+.note-box{font-size:12px;color:var(--ink-2);line-height:1.6;background:var(--green-soft);border:1px solid var(--line);border-radius:14px;padding:13px 14px}
+.note-box b{color:var(--ink)}.note-box code{background:var(--surface-2);padding:1px 5px;border-radius:5px;font-size:11px}
+.mode-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--surface-2);color:var(--ink-3)}
+.mode-pill .dot{width:7px;height:7px;border-radius:50%;background:var(--ink-3)}.mode-pill.live .dot{background:var(--green)}
+
+#toast{position:fixed;left:50%;bottom:calc(var(--tabbar-h) + var(--safe-b) + 16px);transform:translateX(-50%) translateY(20px);z-index:60;background:var(--ink);color:var(--paper);font-size:13px;font-weight:600;padding:11px 18px;border-radius:13px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-width:88%;text-align:center;box-shadow:var(--shadow-lg)}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .hidden{display:none!important}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -225,13 +236,13 @@ input[type=range]{flex:1;accent-color:var(--primary)}
 <div id="app">
   <div class="topbar">
     <svg class="leaf" viewBox="0 0 32 32" fill="none">
-      <path d="M16 28C16 28 16 18 16 14C16 8 22 4 28 4C28 12 24 18 16 18" fill="#6FC28B"/>
-      <path d="M16 28C16 28 16 20 16 17C16 12 11 9 5 9C5 16 9 21 16 21" fill="#34B36A"/>
-      <rect x="15" y="17" width="2" height="11" rx="1" fill="#2DA873"/>
+      <path d="M16 28C16 28 16 18 16 14C16 8 22 4 28 4C28 12 24 18 16 18" fill="#78CD96"/>
+      <path d="M16 28C16 28 16 20 16 17C16 12 11 9 5 9C5 16 9 21 16 21" fill="#49A876"/>
+      <rect x="15" y="17" width="2" height="11" rx="1" fill="#2EA873"/>
     </svg>
     <div class="brand">Sprout <span class="sub">Speaking</span></div>
     <div class="spacer"></div>
-    <button class="chip-btn ghost" id="levelChip" onclick="setTab('settings')">B1</button>
+    <button class="lvchip" id="levelChip" onclick="setTab('settings')">B1</button>
   </div>
 
   <div class="main">
@@ -241,79 +252,62 @@ input[type=range]{flex:1;accent-color:var(--primary)}
     <!-- TALK -->
     <div class="scr hidden" id="screen-talk">
       <div class="pad" id="modePicker">
-        <div class="hello">場面を選ぶ</div>
-        <p class="hello-sub">役になりきって会話の練習ができるよ。</p>
+        <div class="h1">場面を選ぶ</div>
+        <p class="sub">役になりきって会話の練習ができるよ。</p>
         <div class="mode-grid" id="modeGrid"></div>
       </div>
       <div id="chatView" class="hidden">
         <div class="chat-head">
-          <button class="back" onclick="exitMode()" aria-label="戻る"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <button class="ic-btn" onclick="exitMode()" aria-label="戻る"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
           <div><div class="ttl" id="chatTitle">Free talk</div><div class="lv" id="chatLevel">Level B1</div></div>
-          <button class="mute on" id="voiceToggle" onclick="toggleVoice()" aria-label="音声"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 010 7"/><path d="M19 5a9 9 0 010 14"/></svg></button>
+          <div class="right">
+            <button class="ic-btn" id="hfBtn" onclick="toggleHandsFree()" aria-label="ハンズフリー"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14v-3a9 9 0 0118 0v3"/><path d="M21 16a2 2 0 01-2 2h-1v-5h1a2 2 0 012 2z"/><path d="M3 16a2 2 0 002 2h1v-5H5a2 2 0 00-2 2z"/><path d="M19 18v1a3 3 0 01-3 3h-4"/></svg></button>
+            <button class="ic-btn on" id="voiceToggle" onclick="toggleVoice()" aria-label="音声"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 010 7"/><path d="M19 5a9 9 0 010 14"/></svg></button>
+          </div>
         </div>
         <div id="msgScroll"><div class="messages" id="messages"></div><div class="hint">英単語・熟語・文をタップ → 調べて保存できる</div></div>
         <div class="dock">
-          <div class="selbar" id="selBar">
-            <span class="txt" id="selTxt"></span>
-            <button class="all" onclick="selectWhole()">全文</button>
-            <button class="lk" onclick="lookupSel()">調べる</button>
-            <button class="cl" onclick="clearSel()">✕</button>
-          </div>
+          <div class="hfbanner" id="hfBanner"><span class="t">🎧 ハンズフリー中・画面はオンのまま</span><button class="stop" onclick="toggleHandsFree()">やめる</button></div>
+          <div class="selbar" id="selBar"><span class="txt" id="selTxt"></span><button class="all" onclick="selectWhole()">全文</button><button class="lk" onclick="lookupSel()">調べる</button><button class="cl" onclick="clearSel()">✕</button></div>
           <div class="interim" id="interim"></div>
           <div class="input-row">
             <input id="textIn" placeholder="話すか、入力してもOK" autocomplete="off" autocapitalize="off" onkeydown="if(event.key==='Enter')sendTyped()">
             <button class="send" id="sendBtn" onclick="sendTyped()" disabled aria-label="送信"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
           </div>
-          <div class="mic-dock">
-            <div class="mic-wrap" id="micWrap">
-              <button class="mic" id="micBtn" onclick="toggleMic()" aria-label="話す"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0"/><path d="M12 17v4"/></svg></button>
-            </div>
-          </div>
+          <div class="mic-dock"><div class="mic-wrap" id="micWrap"><button class="mic" id="micBtn" onclick="toggleMic()" aria-label="話す"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0"/><path d="M12 17v4"/></svg></button></div></div>
           <div class="mic-label" id="micLabel">タップして話す</div>
         </div>
       </div>
     </div>
 
-    <!-- CARDS / NOTES -->
+    <!-- NOTES -->
     <div class="scr scroll hidden" id="screen-cards"><div class="pad" id="cardsInner"></div></div>
 
     <!-- SETTINGS -->
     <div class="scr scroll hidden" id="screen-settings">
       <div class="pad">
-        <div class="eyebrow">設定</div>
+        <div class="section-title">設定</div>
         <div style="margin-bottom:16px"><span class="mode-pill" id="modePill"><span class="dot"></span><span id="modeText">確認中…</span></span></div>
-        <div class="set-group">
-          <div class="set-row"><div class="info"><div class="t">レベル</div><div class="d">語彙と話す速さ（Sproutと同じCEFR）</div></div><div class="seg2" id="levelSeg"></div></div>
-        </div>
-        <div class="set-group">
-          <div class="set-row" style="display:block">
-            <div class="info" style="margin-bottom:11px"><div class="t">AIの口調</div><div class="d">話し方のキャラクターを選ぶ</div></div>
-            <div class="tone-list" id="toneList"></div>
-          </div>
-        </div>
+        <div class="set-group"><div class="set-row"><div class="info"><div class="t">レベル</div><div class="d">語彙と話す速さ（Sproutと同じCEFR）</div></div><div class="seg2" id="levelSeg"></div></div></div>
+        <div class="set-group"><div class="set-row" style="display:block"><div class="info" style="margin-bottom:11px"><div class="t">AIの口調</div><div class="d">話し方のキャラクターを選ぶ</div></div><div class="tone-list" id="toneList"></div></div></div>
         <div class="set-group">
           <div class="set-row"><div class="info"><div class="t">AIの音声</div><div class="d">返答を読み上げる</div></div><button class="toggle on" id="tgVoice" onclick="toggleVoice()"></button></div>
           <div class="set-row"><div class="info"><div class="t">読み上げ速度</div><div class="d" id="rateLabel">0.95×</div></div><input type="range" id="rateRange" min="0.6" max="1.2" step="0.05" value="0.95" oninput="setRate(this.value)"></div>
           <div class="set-row"><div class="info"><div class="t">日本語訳を最初から表示</div><div class="d">返答の下に訳を出す</div></div><button class="toggle" id="tgJa" onclick="toggleJaDefault()"></button></div>
         </div>
-        <div class="note-box">
-          <b>動作モード</b><br>
-          ・<b>デプロイ済み</b>（Vercel）= 会話・文字起こしをGroq無料枠、読み上げはブラウザ標準 → <b>iOSのホーム画面追加でも動く・0円</b><br>
-          ・<b>プレビュー</b>（claude.ai等）= ブラウザ音声＋Claudeで試用<br>
-          起動時に自動判定。
-        </div>
+        <div class="note-box"><b>ハンズフリー会話</b><br>会話画面右上の🎧で起動。話し終わると自動で認識→返答→また聞き取り、を繰り返す。歩きながらでも手で操作不要（ただし<b>画面はオンのまま</b>＝Webの仕様上、画面オフ/バックグラウンドでは動かない）。</div>
+        <div class="note-box" style="margin-top:12px"><b>動作モード</b>：デプロイ済み=Groq無料枠＋ブラウザ読み上げ（0円）。プレビュー=ブラウザ音声＋Claude。起動時に自動判定。</div>
       </div>
     </div>
 
-    <!-- lookup sheet -->
     <div class="sheet-bg" id="sheetBg" onclick="closeSheet()"></div>
     <div class="sheet" id="sheet"><div class="grip"></div><div id="sheetBody"></div></div>
   </div>
 
   <div class="tabbar">
-    <button id="tab-home" class="active" onclick="setTab('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-6h6v6"/></svg>ホーム</button>
+    <button id="tab-home" class="active" onclick="setTab('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>ホーム</button>
     <button id="tab-talk" onclick="setTab('talk')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>会話</button>
-    <button id="tab-cards" onclick="setTab('cards')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h11l5 5v11a0 0 0 010 0H4z"/><path d="M14 4v5h5"/><path d="M8 13h8M8 17h5"/></svg>カード</button>
+    <button id="tab-cards" onclick="setTab('cards')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h11l5 5v11a0 0 0 010 0H4z"/><path d="M15 4v5h5"/><path d="M8 13h8M8 17h6"/></svg>ノート</button>
     <button id="tab-settings" onclick="setTab('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>設定</button>
   </div>
 </div>
@@ -324,8 +318,7 @@ let MODE='demo';
 async function detectMode(){try{const r=await fetch('/api/health',{cache:'no-store'});if(r.ok){const j=await r.json();if(j&&j.ok)MODE='backend';}}catch(e){}updateModePill();}
 
 const state={tab:'home',mode:null,opener:null,level:'B1',voiceOn:true,rate:0.95,jaDefault:false,tone:'friendly',
-  cards:[],history:[],busy:false,listening:false,noteFolder:null,
-  sel:{bubble:null,a:null,b:null},pending:null};
+  cards:[],history:[],busy:false,listening:false,noteFolder:null,handsfree:false,sel:{bubble:null,a:null,b:null},pending:null};
 
 const SCENARIOS=[
  {id:'free',free:true,icon:'💬',title:'フリートーク',desc:'なんでも自由に',ctx:'an open free-talk conversation about anything the learner wants'},
@@ -336,6 +329,14 @@ const SCENARIOS=[
  {id:'smalltalk',icon:'🙌',title:'自己紹介',desc:'初対面のスモールトーク',ctx:'meeting someone new at a casual event; make friendly small talk'},
  {id:'business',icon:'💼',title:'ビジネス',desc:'会議・電話のやり取り',ctx:'a workplace meeting / business call between colleagues'},
  {id:'shopping',icon:'🛍️',title:'買い物',desc:'店員とのやり取り',ctx:'a clothing store where you are the shop assistant'},
+];
+const TONES=[
+ {k:'friendly',t:'フレンドリー',d:'親しみやすくカジュアル（標準）',p:'Use a friendly, casual, warm tone with everyday words and a relaxed rhythm.'},
+ {k:'polite',t:'ていねい',d:'丁寧でフォーマル。ビジネス向き',p:'Use polite, formal English (e.g. "Could you...", "I would be happy to..."). Be courteous and professional, like a business setting.'},
+ {k:'tutor',t:'熱心な先生',d:'よく直してくれるコーチ風',p:'Act like an enthusiastic English teacher: be supportive, and whenever the learner makes a mistake, gently point out a better way to say it before continuing.'},
+ {k:'cheerful',t:'明るい・元気',d:'テンション高めで前向き',p:'Be very upbeat, energetic and cheerful! Use exclamations and lots of positive encouragement to keep the learner motivated.'},
+ {k:'calm',t:'おだやか',d:'ゆっくり・やさしい言葉で',p:'Be calm, gentle and reassuring. Use short, simple sentences and easy words, speaking slowly and patiently.'},
+ {k:'native',t:'ネイティブ風',d:'くだけた自然な言い回し',p:'Talk like a relaxed native speaker: use natural contractions, common phrasal verbs and light everyday slang (e.g. "gonna", "kinda", "no worries").'},
 ];
 const DAILY=[
  {q:"What's one small thing that made you smile today?",ja:"今日、ちょっと笑顔になったことは？"},
@@ -359,14 +360,6 @@ const DAILY=[
  {q:"What's the weather like where you are today?",ja:"今いる場所の天気はどう？"},
  {q:"What's a goal you're working on right now?",ja:"今取り組んでいる目標は？"},
 ];
-const TONES=[
- {k:'friendly',t:'フレンドリー',d:'親しみやすくカジュアル（標準）',p:'Speak in a friendly, casual, warm and approachable tone.'},
- {k:'polite',t:'ていねい',d:'丁寧でフォーマル。ビジネス向き',p:'Speak politely and somewhat formally, suitable for business or first meetings.'},
- {k:'tutor',t:'熱心な先生',d:'よく直してくれるコーチ風',p:'Act as an enthusiastic English tutor: stay encouraging but correct the learner\'s mistakes a bit more actively, while keeping the conversation flowing.'},
- {k:'cheerful',t:'明るい・元気',d:'テンション高めで前向き',p:'Be upbeat, energetic and cheerful, with lots of positive encouragement.'},
- {k:'calm',t:'おだやか',d:'ゆっくり・やさしい言葉で',p:'Be calm and gentle. Speak a little slower and use simpler words and shorter sentences.'},
- {k:'native',t:'ネイティブ風',d:'くだけた自然な言い回し',p:'Talk like a casual native speaker, using natural everyday expressions and light slang.'},
-];
 function todayQ(){const s=new Date();const start=new Date(s.getFullYear(),0,0);const day=Math.floor((s-start)/86400000);return DAILY[day%DAILY.length];}
 
 const RATE_TXT=v=>(Number(v).toFixed(2)+'×');
@@ -374,43 +367,21 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1900);}
 
-/* ---------- TABS ---------- */
-function setTab(tab){
-  state.tab=tab;
-  ['home','talk','cards','settings'].forEach(t=>{$('screen-'+t).classList.toggle('hidden',t!==tab);$('tab-'+t).classList.toggle('active',t===tab);});
-  if(tab==='home')renderHome();
-  if(tab==='cards')renderCards();
-  if(tab==='settings'){syncSettingsUI();updateModePill();}
-}
+function setTab(tab){state.tab=tab;['home','talk','cards','settings'].forEach(t=>{$('screen-'+t).classList.toggle('hidden',t!==tab);$('tab-'+t).classList.toggle('active',t===tab);});if(tab==='home')renderHome();if(tab==='cards')renderCards();if(tab==='settings'){syncSettingsUI();updateModePill();}}
 
-/* ---------- HOME ---------- */
+/* HOME */
 function greet(){const h=new Date().getHours();if(h<5)return'こんばんは';if(h<11)return'おはよう';if(h<18)return'こんにちは';return'こんばんは';}
 function renderHome(){
-  const q=todayQ();
-  const today=new Date();today.setHours(0,0,0,0);
-  const todayN=state.cards.filter(c=>c.created>=today.getTime()).length;
-  const total=state.cards.length;
-  const resume = state.mode && state.history.length ? `
-    <button class="resume" onclick="setTab('talk')">
-      <div class="ri">${state.mode.icon||'💬'}</div>
-      <div><div class="rt">会話のつづき</div><div class="rd">${esc(state.mode.title)} を再開</div></div>
-      <span class="arr"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></span>
-    </button>`:'';
+  const q=todayQ();const today=new Date();today.setHours(0,0,0,0);
+  const todayN=state.cards.filter(c=>c.created>=today.getTime()).length;const total=state.cards.length;
+  const resume=state.mode&&state.history.length?`<button class="resume" onclick="setTab('talk')"><div class="ri">${state.mode.icon||'💬'}</div><div><div class="rt">会話のつづき</div><div class="rd">${esc(state.mode.title)} を再開</div></div><span class="arr"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></span></button>`:'';
   $('homeInner').innerHTML=`
-    <div class="hello">${greet()}、Seita 👋</div>
-    <p class="hello-sub">今日のひとことから、英語で話そう。</p>
-    <div class="home-stats">
-      <div class="hstat"><div class="n">${total}</div><div class="l">ノートの総数</div></div>
-      <div class="hstat"><div class="n">${todayN}</div><div class="l">今日 追加</div></div>
-    </div>
-    <div class="hero">
-      <span class="tag">☀️ 今日の質問</span>
-      <div class="q">${esc(q.q)}</div>
-      <div class="qja">${esc(q.ja)}</div>
-      <button class="go" onclick="startDaily()">この質問で話す <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
-    </div>
+    <div class="h1">${greet()}、Seita 👋</div>
+    <p class="sub">今日のひとことから、英語で話そう。</p>
+    <div class="home-stats"><div class="hstat"><div class="n">${total}</div><div class="l">ノートの総数</div></div><div class="hstat"><div class="n">${todayN}</div><div class="l">今日 追加</div></div></div>
+    <div class="hero"><span class="tag">☀️ 今日の質問</span><div class="q">${esc(q.q)}</div><div class="qja">${esc(q.ja)}</div><button class="btn go" onclick="startDaily()">この質問で話す <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
     ${resume}
-    <div class="sec-h">サッと始める</div>
+    <div class="section-title">サッと始める</div>
     <div class="chips">
       <button class="chip" onclick="startMode('free')"><span class="e">💬</span>フリートーク</button>
       <button class="chip" onclick="startMode('cafe')"><span class="e">☕️</span>カフェ</button>
@@ -421,265 +392,148 @@ function renderHome(){
 }
 function startDaily(){const q=todayQ();beginConversation(SCENARIOS[0],`(Open the conversation by warmly asking the learner this exact question, then react naturally to their answer: "${q.q}")`);}
 
-/* ---------- TALK ---------- */
-function renderModeGrid(){
-  $('modeGrid').innerHTML=SCENARIOS.map(s=>`
-   <button class="mode-card${s.free?' free':''}" onclick="startMode('${s.id}')">
-     <div class="ic">${s.icon}</div>
-     <div><div class="mt">${s.title}</div><div class="md">${s.desc}</div></div>
-     ${s.free?'<span class="arr"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>':''}
-   </button>`).join('');
-}
-function startMode(id){const s=SCENARIOS.find(x=>x.id===id);beginConversation(s, s.free?'(Greet the learner warmly in one short line and invite them to talk about anything.)':'(Greet the learner warmly in one short line and naturally begin the role-play.)');}
-function beginConversation(modeObj,opener){
-  state.mode=modeObj;state.opener=opener;state.history=[];clearSel();
-  setTab('talk');
-  $('modePicker').classList.add('hidden');$('chatView').classList.remove('hidden');
-  $('chatTitle').textContent=modeObj.title;$('chatLevel').textContent='Level '+state.level;
-  $('messages').innerHTML='';$('textIn').value='';$('sendBtn').disabled=true;
-  getAIResponse();
-}
-function exitMode(){stopMic();if('speechSynthesis'in window)speechSynthesis.cancel();state.mode=null;clearSel();$('chatView').classList.add('hidden');$('modePicker').classList.remove('hidden');}
-
+/* TALK */
+function renderModeGrid(){$('modeGrid').innerHTML=SCENARIOS.map(s=>`<button class="mode-card${s.free?' free':''}" onclick="startMode('${s.id}')"><div class="ic">${s.icon}</div><div><div class="mt">${s.title}</div><div class="md">${s.desc}</div></div>${s.free?'<span class="arr"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>':''}</button>`).join('');}
+function startMode(id){const s=SCENARIOS.find(x=>x.id===id);beginConversation(s,s.free?'(Greet the learner warmly in one short line and invite them to talk about anything.)':'(Greet the learner warmly in one short line and naturally begin the role-play.)');}
+function beginConversation(modeObj,opener){state.mode=modeObj;state.opener=opener;state.history=[];clearSel();setTab('talk');$('modePicker').classList.add('hidden');$('chatView').classList.remove('hidden');$('chatTitle').textContent=modeObj.title;$('chatLevel').textContent='Level '+state.level;$('messages').innerHTML='';$('textIn').value='';$('sendBtn').disabled=true;getAIResponse();}
+function exitMode(){stopHandsFree();stopMic();if('speechSynthesis'in window)speechSynthesis.cancel();state.mode=null;clearSel();$('chatView').classList.add('hidden');$('modePicker').classList.remove('hidden');}
 function scrollDown(){const s=$('msgScroll');requestAnimationFrame(()=>s.scrollTop=s.scrollHeight);}
-
-/* build messages from history (for redo re-render) */
-function renderMessages(){
-  const box=$('messages');box.innerHTML='';
-  state.history.forEach((t,i)=>{t.role==='user'?appendUserEl(t,i):appendAIEl(t);});
-  scrollDown();
-}
-function appendUserEl(item,index){
-  const row=document.createElement('div');row.className='row user';
-  row.innerHTML=`<div class="bubble">${esc(item.text)}</div>
-    <button class="redo" onclick="redoFrom(${index})"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"/><path d="M3.5 9a9 9 0 1 1-.5 6"/></svg>もう一度</button>`;
-  $('messages').appendChild(row);scrollDown();
-}
+function renderMessages(){const box=$('messages');box.innerHTML='';state.history.forEach((t,i)=>{t.role==='user'?appendUserEl(t,i):appendAIEl(t);});scrollDown();}
+function appendUserEl(item,index){const row=document.createElement('div');row.className='row user';row.innerHTML=`<div class="bubble">${esc(item.text)}</div><button class="redo" onclick="redoFrom(${index})"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"/><path d="M3.5 9a9 9 0 1 1-.5 6"/></svg>もう一度</button>`;$('messages').appendChild(row);scrollDown();}
 function appendAIEl(item){
   const data=item.data;
-  if(data.correction){const f=document.createElement('div');f.className='fix';
-    f.innerHTML=`<div class="lab">✏️ もっと自然な言い方</div><div class="corr">${esc(data.correction)}</div>${data.correction_note_ja?`<div class="note">${esc(data.correction_note_ja)}</div>`:''}`;
-    $('messages').appendChild(f);}
+  if(data.correction){const f=document.createElement('div');f.className='fix';f.innerHTML=`<div class="lab">✏️ もっと自然な言い方</div><div class="corr">${esc(data.correction)}</div>${data.correction_note_ja?`<div class="note">${esc(data.correction_note_ja)}</div>`:''}`;$('messages').appendChild(f);}
   const row=document.createElement('div');row.className='row ai';
-  const bubble=document.createElement('div');bubble.className='bubble';bubble.innerHTML=tappable(data.reply||'');
-  bubble._tokens=(data.reply||'').match(/[A-Za-z][A-Za-z'’-]*/g)||[];
+  const bubble=document.createElement('div');bubble.className='bubble';bubble.innerHTML=tappable(data.reply||'');bubble._tokens=(data.reply||'').match(/[A-Za-z][A-Za-z'’-]*/g)||[];
   const tools=document.createElement('div');tools.className='ai-tools';
-  const rep=document.createElement('button');rep.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 010 7"/></svg>もう一度';
-  rep.onclick=()=>tts(data.reply);tools.appendChild(rep);
-  if(data.reply_ja){const jb=document.createElement('button');jb.className='jaBtn';jb.textContent='訳を見る';
-    jb.onclick=()=>{const ja=row.querySelector('.ja-line');const s=ja.classList.toggle('show');jb.classList.toggle('act',s);jb.textContent=s?'訳を隠す':'訳を見る';};tools.appendChild(jb);}
+  const rep=document.createElement('button');rep.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 010 7"/></svg>もう一度';rep.onclick=()=>tts(data.reply);tools.appendChild(rep);
+  if(data.reply_ja){const jb=document.createElement('button');jb.className='jaBtn';jb.textContent='訳を見る';jb.onclick=()=>{const ja=row.querySelector('.ja-line');const s=ja.classList.toggle('show');jb.classList.toggle('act',s);jb.textContent=s?'訳を隠す':'訳を見る';};tools.appendChild(jb);}
   row.appendChild(bubble);row.appendChild(tools);
-  if(data.reply_ja){const ja=document.createElement('div');ja.className='ja-line'+(state.jaDefault?' show':'');ja.textContent=data.reply_ja;row.appendChild(ja);
-    if(state.jaDefault){const b=tools.querySelector('.jaBtn');if(b){b.classList.add('act');b.textContent='訳を隠す';}}}
+  if(data.reply_ja){const ja=document.createElement('div');ja.className='ja-line'+(state.jaDefault?' show':'');ja.textContent=data.reply_ja;row.appendChild(ja);if(state.jaDefault){const b=tools.querySelector('.jaBtn');if(b){b.classList.add('act');b.textContent='訳を隠す';}}}
   $('messages').appendChild(row);scrollDown();
-  if(state.voiceOn&&data.reply)tts(data.reply);
+  if(state.voiceOn&&data.reply)tts(data.reply,()=>{if(state.handsfree)startHFListen();});
+  else if(state.handsfree)startHFListen();
 }
 function tappable(t){let i=-1;return esc(t).replace(/[A-Za-z][A-Za-z'’-]*/g,m=>{i++;return `<w data-i="${i}" onclick="onWord(this)">${m}</w>`;});}
 
-/* ---------- word/phrase selection ---------- */
-function onWord(w){
-  const bubble=w.parentNode;const i=+w.dataset.i;
-  if(state.sel.bubble!==bubble){state.sel={bubble,a:i,b:i};}
-  else if(i>=state.sel.a&&i<=state.sel.b){state.sel={bubble,a:i,b:i};} /* tap inside -> reset to single */
-  else{state.sel.a=Math.min(state.sel.a,i);state.sel.b=Math.max(state.sel.b,i);}
-  paintSel();
-}
+/* selection */
+function onWord(w){const bubble=w.parentNode;const i=+w.dataset.i;if(state.sel.bubble!==bubble){state.sel={bubble,a:i,b:i};}else if(i>=state.sel.a&&i<=state.sel.b){state.sel={bubble,a:i,b:i};}else{state.sel.a=Math.min(state.sel.a,i);state.sel.b=Math.max(state.sel.b,i);}paintSel();}
 function selectWhole(){if(!state.sel.bubble)return;const ws=state.sel.bubble.querySelectorAll('w');if(!ws.length)return;state.sel.a=0;state.sel.b=ws.length-1;paintSel();}
 function clearSel(){if(state.sel.bubble)state.sel.bubble.querySelectorAll('w').forEach(x=>x.classList.remove('sel'));state.sel={bubble:null,a:null,b:null};$('selBar').classList.remove('show');}
 function selText(){if(!state.sel.bubble)return'';const t=state.sel.bubble._tokens||[];return t.slice(state.sel.a,state.sel.b+1).join(' ');}
-function paintSel(){
-  const ws=state.sel.bubble.querySelectorAll('w');
-  ws.forEach(x=>{const i=+x.dataset.i;x.classList.toggle('sel',i>=state.sel.a&&i<=state.sel.b);});
-  const txt=selText();$('selTxt').textContent='「'+txt+'」';$('selBar').classList.add('show');
-}
+function paintSel(){state.sel.bubble.querySelectorAll('w').forEach(x=>{const i=+x.dataset.i;x.classList.toggle('sel',i>=state.sel.a&&i<=state.sel.b);});$('selTxt').textContent='「'+selText()+'」';$('selBar').classList.add('show');}
 function classify(text){const w=text.trim().split(/\s+/).filter(Boolean);if(w.length>=5)return'sentence';if(w.length===1)return'word';return'idiom';}
 
-/* ---------- lookup sheet ---------- */
+/* sheet */
 function lookupSel(){const txt=selText();if(!txt)return;openSheet(txt,classify(txt));}
 const TYPE_LABEL={word:'語',idiom:'熟語',sentence:'文'};
-async function openSheet(text,type){
-  $('sheetBg').classList.add('show');$('sheet').classList.add('show');
-  state.pending={text,type};
-  renderSheetLoading(text,type);
-  let card=null;
-  try{card=await lookupCard(text,type);}catch(e){}
-  if(!card){$('sheetBody').innerHTML=`<p style="color:var(--danger);padding:14px 0">調べられなかった。もう一度試して。</p>`;return;}
-  state.pending=card;renderSheetResult(card);
-}
-function renderSheetLoading(text,type){
-  $('sheetBody').innerHTML=`
-   <div class="seg">${['word','idiom','sentence'].map(t=>`<button class="${t===type?'on':''}" onclick="reLookup('${t}')">${TYPE_LABEL[t]}</button>`).join('')}</div>
-   <div class="front">${esc(text)}</div>
-   <div class="loading"><span class="mini-spin"></span>調べています…</div>`;
-}
-function reLookup(t){if(!state.pending)return;const text=state.pending.front||state.pending.text;openSheet(text,t);}
-function renderSheetResult(c){
-  const exHtml = c.example_en?`<div class="ex"><span class="en">${esc(c.example_en)}</span><br>${esc(c.example_ja||'')}</div>`:'';
-  const noteHtml = c.note_ja?`<div class="note">📝 ${esc(c.note_ja)}</div>`:'';
-  $('sheetBody').innerHTML=`
-   <div class="seg">${['word','idiom','sentence'].map(t=>`<button class="${t===c.type?'on':''}" onclick="reLookup('${t}')">${TYPE_LABEL[t]}</button>`).join('')}</div>
-   <div><span class="front">${esc(c.front)}</span>${c.pos?`<span class="sub">${esc(c.pos)}</span>`:''}</div>
-   <div class="mean">${esc(c.meaning_ja)}</div>
-   ${exHtml}${noteHtml}
-   <button class="save" id="saveBtn" onclick="saveCard()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>ノートに保存</button>`;
-}
+async function openSheet(text,type){$('sheetBg').classList.add('show');$('sheet').classList.add('show');state.pending={text,type};renderSheetLoading(text,type);let card=null;try{card=await lookupCard(text,type);}catch(e){}if(!card){$('sheetBody').innerHTML='<p style="color:var(--danger);padding:14px 0">調べられなかった。もう一度試して。</p>';return;}state.pending=card;renderSheetResult(card);}
+function renderSheetLoading(text,type){$('sheetBody').innerHTML=`<div class="seg">${['word','idiom','sentence'].map(t=>`<button class="${t===type?'on':''}" onclick="reLookup('${t}')">${TYPE_LABEL[t]}</button>`).join('')}</div><div class="front">${esc(text)}</div><div class="loading"><span class="mini-spin"></span>調べています…</div>`;}
+function reLookup(t){if(!state.pending)return;openSheet(state.pending.front||state.pending.text,t);}
+function renderSheetResult(c){const ex=c.example_en?`<div class="ex"><span class="e2">${esc(c.example_en)}</span><br>${esc(c.example_ja||'')}</div>`:'';const note=c.note_ja?`<div class="note2">📝 ${esc(c.note_ja)}</div>`:'';$('sheetBody').innerHTML=`<div class="seg">${['word','idiom','sentence'].map(t=>`<button class="${t===c.type?'on':''}" onclick="reLookup('${t}')">${TYPE_LABEL[t]}</button>`).join('')}</div><div><span class="front">${esc(c.front)}</span>${c.pos?` <span class="pos-chip">${esc(c.pos)}</span>`:''}</div><div class="mean">${esc(c.meaning_ja)}</div>${ex}${note}<button class="save" id="saveBtn" onclick="saveCard()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>ノートに保存</button>`;}
 function closeSheet(){$('sheetBg').classList.remove('show');$('sheet').classList.remove('show');state.pending=null;}
-async function lookupCard(text,type){
-  let sys;
-  if(type==='sentence')
-    sys='Explain this English sentence for a Japanese learner. Respond ONLY with one minified JSON object, no markdown: {"front":"<the sentence>","pos":"文","meaning_ja":"<natural Japanese translation>","note_ja":"<brief grammar or usage note in Japanese>","example_en":"","example_ja":""}';
-  else if(type==='idiom')
-    sys='Make a flashcard for this English idiom/phrase for a Japanese learner. Respond ONLY with one minified JSON object, no markdown: {"front":"<the phrase>","pos":"熟語","meaning_ja":"<concise Japanese meaning>","example_en":"<one short natural example>","example_ja":"<its Japanese translation>","note_ja":""}';
-  else
-    sys='Make a vocabulary flashcard for this English word for a Japanese learner. Respond ONLY with one minified JSON object, no markdown: {"front":"<base form>","pos":"<品詞 日本語 e.g. 名詞/動詞/形容詞/副詞>","meaning_ja":"<concise Japanese meaning>","example_en":"<one short natural example>","example_ja":"<its Japanese translation>","note_ja":""}';
-  const out=await llm(sys,[{role:'user',content:'"'+text+'"'}]);
-  const o=parseObj(out);if(!o)return null;
-  return {type,front:o.front||text,pos:o.pos||'',meaning_ja:o.meaning_ja||'',example_en:o.example_en||'',example_ja:o.example_ja||'',note_ja:o.note_ja||''};
-}
-function saveCard(){
-  const c=state.pending;if(!c||!c.front)return;
-  if(state.cards.some(x=>x.front.toLowerCase()===c.front.toLowerCase()&&x.type===c.type)){toast('もう保存済み');closeSheet();clearSel();return;}
-  state.cards.unshift(Object.assign({id:Date.now()+'_'+Math.random().toString(36).slice(2,6),created:Date.now(),srs:{level:0,next:Date.now()}},c));
-  const b=$('saveBtn');if(b){b.classList.add('done');b.innerHTML='✓ 保存しました';}
-  toast('ノートに追加した');
-  setTimeout(()=>{closeSheet();clearSel();},550);
-}
+async function lookupCard(text,type){let sys;if(type==='sentence')sys='Explain this English sentence for a Japanese learner. Respond ONLY with one minified JSON object, no markdown: {"front":"<the sentence>","pos":"文","meaning_ja":"<natural Japanese translation>","note_ja":"<brief grammar or usage note in Japanese>","example_en":"","example_ja":""}';else if(type==='idiom')sys='Make a flashcard for this English idiom/phrase for a Japanese learner. Respond ONLY with one minified JSON object, no markdown: {"front":"<the phrase>","pos":"熟語","meaning_ja":"<concise Japanese meaning>","example_en":"<one short natural example>","example_ja":"<its Japanese translation>","note_ja":""}';else sys='Make a vocabulary flashcard for this English word for a Japanese learner. Respond ONLY with one minified JSON object, no markdown: {"front":"<base form>","pos":"<品詞 日本語 e.g. 名詞/動詞/形容詞/副詞>","meaning_ja":"<concise Japanese meaning>","example_en":"<one short natural example>","example_ja":"<its Japanese translation>","note_ja":""}';const out=await llm(sys,[{role:'user',content:'"'+text+'"'}]);const o=parseObj(out);if(!o)return null;return{type,front:o.front||text,pos:o.pos||'',meaning_ja:o.meaning_ja||'',example_en:o.example_en||'',example_ja:o.example_ja||'',note_ja:o.note_ja||''};}
+function saveCard(){const c=state.pending;if(!c||!c.front)return;if(state.cards.some(x=>x.front.toLowerCase()===c.front.toLowerCase()&&x.type===c.type)){toast('もう保存済み');closeSheet();clearSel();return;}state.cards.unshift(Object.assign({id:Date.now()+'_'+Math.random().toString(36).slice(2,6),created:Date.now(),srs:{level:0,next:Date.now()}},c));const b=$('saveBtn');if(b){b.classList.add('done');b.innerHTML='✓ 保存しました';}toast('ノートに追加した');setTimeout(()=>{closeSheet();clearSel();},550);}
 
-/* ---------- AI response ---------- */
-function systemPrompt(){
-  return `You are a warm, encouraging English conversation partner inside a language-learning app for a Japanese learner.
+/* AI */
+function systemPrompt(){return `You are a warm, encouraging English conversation partner inside a language-learning app for a Japanese learner.
 Setting: ${state.mode.ctx}.
 Learner CEFR level: ${state.level}. Match vocabulary, sentence length and pace to this level.
-Tone: ${(TONES.find(t=>t.k===state.tone)||TONES[0]).p}
+SPEAKING STYLE (follow this closely): ${(TONES.find(t=>t.k===state.tone)||TONES[0]).p}
 Rules:
 - Keep replies short and natural: 1–2 sentences, then ask a follow-up question.
 - Stay in character. Do not lecture or break the role-play.
 - If the learner's last English had a clear, useful error, offer a more natural version while keeping the flow.
 Respond ONLY with one minified JSON object, no markdown, exactly:
-{"reply":"<English reply>","reply_ja":"<Japanese translation of reply>","correction":<"more natural version of the learner's last line" or null>,"correction_note_ja":<"short Japanese note" or null>}`;
-}
+{"reply":"<English reply in the speaking style above>","reply_ja":"<Japanese translation of reply>","correction":<"more natural version of the learner's last line" or null>,"correction_note_ja":<"short Japanese note" or null>}`;}
 function historyMsgs(){return state.history.map(t=>t.role==='user'?{role:'user',content:t.text}:{role:'assistant',content:t.data.reply});}
-async function llm(system,messages){
-  if(MODE==='backend'){
-    const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system,messages})});
-    if(!r.ok)throw new Error('chat '+r.status);const j=await r.json();return j.text||'';
-  }else{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system,messages})});
-    const j=await r.json();return (j.content||[]).map(b=>b.type==='text'?b.text:'').join('').trim();
-  }
-}
-async function getAIResponse(){
-  if(state.busy)return;state.busy=true;updateSendState();
-  showTyping();
-  try{
-    const msgs=[{role:'user',content:state.opener},...historyMsgs()];
-    const txt=await llm(systemPrompt(),msgs);
-    const data=parseReply(txt);
-    hideTyping();
-    state.history.push({role:'ai',data});
-    appendAIEl({role:'ai',data});
-  }catch(e){
-    hideTyping();
-    const row=document.createElement('div');row.className='row ai';
-    row.innerHTML='<div class="bubble" style="color:var(--danger)">うまく返答できなかった。もう一度送ってみて。</div>';
-    $('messages').appendChild(row);scrollDown();
-  }finally{state.busy=false;updateSendState();}
-}
+async function llm(system,messages){if(MODE==='backend'){const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system,messages})});if(!r.ok)throw new Error('chat '+r.status);const j=await r.json();return j.text||'';}else{const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system,messages})});const j=await r.json();return (j.content||[]).map(b=>b.type==='text'?b.text:'').join('').trim();}}
+async function getAIResponse(){if(state.busy)return;state.busy=true;updateSendState();showTyping();try{const msgs=[{role:'user',content:state.opener},...historyMsgs()];const txt=await llm(systemPrompt(),msgs);const data=parseReply(txt);hideTyping();state.history.push({role:'ai',data});appendAIEl({role:'ai',data});}catch(e){hideTyping();const row=document.createElement('div');row.className='row ai';row.innerHTML='<div class="bubble" style="color:var(--danger)">うまく返答できなかった。もう一度送ってみて。</div>';$('messages').appendChild(row);scrollDown();if(state.handsfree)setTimeout(()=>{if(state.handsfree)startHFListen();},600);}finally{state.busy=false;updateSendState();}}
 function parseReply(txt){const o=parseObj(txt);if(o&&o.reply)return o;return{reply:txt||'Sorry, could you say that again?',reply_ja:'',correction:null,correction_note_ja:null};}
 function parseObj(txt){let t=String(txt).replace(/```json/gi,'').replace(/```/g,'').trim();const m=t.match(/\{[\s\S]*\}/);if(m)t=m[0];try{return JSON.parse(t);}catch(e){return null;}}
 function showTyping(){const t=document.createElement('div');t.className='typing';t.id='typingDot';t.innerHTML='<span></span><span></span><span></span>';$('messages').appendChild(t);scrollDown();}
 function hideTyping(){const t=$('typingDot');if(t)t.remove();}
 
-/* ---------- send / redo ---------- */
+/* send / redo */
 function updateSendState(){$('sendBtn').disabled=!$('textIn').value.trim()||state.busy;}
 $('textIn').addEventListener('input',updateSendState);
 function sendTyped(){const v=$('textIn').value.trim();if(!v||state.busy)return;$('textIn').value='';updateSendState();addUserTurn(v);}
 function addUserTurn(text){const idx=state.history.length;state.history.push({role:'user',text});appendUserEl({role:'user',text},idx);getAIResponse();}
-function redoFrom(index){
-  if(state.busy)return;
-  state.history=state.history.slice(0,index);
-  if('speechSynthesis'in window)speechSynthesis.cancel();
-  clearSel();renderMessages();
-  toast('言い直してね');
-  toggleMic();
-}
+function redoFrom(index){if(state.busy)return;state.history=state.history.slice(0,index);if('speechSynthesis'in window)speechSynthesis.cancel();clearSel();renderMessages();toast('言い直してね');toggleMic();}
 
-/* ---------- STT ---------- */
-function setMicUI(live){state.listening=live;$('micBtn').classList.toggle('live',live);$('micWrap').classList.toggle('live',live);$('micLabel').textContent=live?'タップで停止':'タップして話す';}
-function toggleMic(){if(state.busy)return;if(MODE==='backend')return state.listening?stopRec():startRec();return state.listening?stopMic():startWebSpeech();}
+/* STT */
+function setMicUI(live){state.listening=live;$('micBtn').classList.toggle('live',live);$('micWrap').classList.toggle('live',live);if(!state.handsfree)$('micLabel').textContent=live?'タップで停止':'タップして話す';}
+function toggleMic(){if(state.busy)return;if(state.handsfree){toggleHandsFree();return;}if(MODE==='backend')return state.listening?stopRec():startRec();return state.listening?stopMic():startWebSpeech();}
 let recog=null;const recogSupported=('webkitSpeechRecognition'in window)||('SpeechRecognition'in window);
-function setupRecog(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;recog=new SR();recog.lang='en-US';recog.interimResults=true;recog.continuous=false;recog.maxAlternatives=1;let finalText='';
-  recog.onresult=e=>{let interim='';finalText='';for(let i=0;i<e.results.length;i++){const r=e.results[i];if(r.isFinal)finalText+=r[0].transcript;else interim+=r[0].transcript;}const im=$('interim');im.textContent=(finalText||interim)?'“'+(finalText||interim)+'”':'';im.classList.toggle('show',!!(finalText||interim));};
-  recog.onend=()=>{setMicUI(false);$('interim').classList.remove('show');$('interim').textContent='';const t=finalText.trim();if(t)addUserTurn(t);};
-  recog.onerror=ev=>{setMicUI(false);if(ev.error==='not-allowed'||ev.error==='service-not-allowed')toast('マイクが使えない。入力欄からどうぞ');else if(ev.error==='no-speech')toast('聞き取れなかった。もう一度どうぞ');};}
+function setupRecog(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;recog=new SR();recog.lang='en-US';recog.interimResults=true;recog.continuous=false;recog.maxAlternatives=1;let finalText='';recog.onresult=e=>{let interim='';finalText='';for(let i=0;i<e.results.length;i++){const r=e.results[i];if(r.isFinal)finalText+=r[0].transcript;else interim+=r[0].transcript;}const im=$('interim');im.textContent=(finalText||interim)?'“'+(finalText||interim)+'”':'';im.classList.toggle('show',!!(finalText||interim));};recog.onend=()=>{setMicUI(false);$('interim').classList.remove('show');$('interim').textContent='';const t=finalText.trim();if(t)addUserTurn(t);else if(state.handsfree)setTimeout(()=>{if(state.handsfree&&!state.busy)startHFListen();},300);};recog.onerror=ev=>{setMicUI(false);if(ev.error==='not-allowed'||ev.error==='service-not-allowed'){toast('マイクが使えない。入力欄からどうぞ');stopHandsFree();}else if(ev.error==='no-speech'&&!state.handsfree)toast('聞き取れなかった。もう一度どうぞ');};}
 function startWebSpeech(){if(!recogSupported){toast('この環境は音声入力に未対応。入力欄を使ってね');$('textIn').focus();return;}if(!recog)setupRecog();if('speechSynthesis'in window)speechSynthesis.cancel();try{recog.start();setMicUI(true);}catch(e){}}
 function stopMic(){if(recog&&state.listening){try{recog.stop();}catch(e){}}setMicUI(false);}
 let mediaRec=null,chunks=[],micStream=null;
-async function startRec(){
-  try{micStream=await navigator.mediaDevices.getUserMedia({audio:true});}catch(e){toast('マイクの許可が必要。入力欄でもOK');$('textIn').focus();return;}
-  chunks=[];const mt=MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':'';
-  mediaRec=mt?new MediaRecorder(micStream,{mimeType:mt}):new MediaRecorder(micStream);
-  mediaRec.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data);};
-  mediaRec.onstop=async()=>{micStream.getTracks().forEach(t=>t.stop());const blob=new Blob(chunks,{type:mediaRec.mimeType||'audio/mp4'});await transcribeBlob(blob);};
-  if('speechSynthesis'in window)speechSynthesis.cancel();mediaRec.start();setMicUI(true);
-}
+async function startRec(){try{micStream=await navigator.mediaDevices.getUserMedia({audio:true});}catch(e){toast('マイクの許可が必要。入力欄でもOK');$('textIn').focus();return;}chunks=[];const mt=MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':'';mediaRec=mt?new MediaRecorder(micStream,{mimeType:mt}):new MediaRecorder(micStream);mediaRec.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data);};mediaRec.onstop=async()=>{micStream.getTracks().forEach(t=>t.stop());const blob=new Blob(chunks,{type:mediaRec.mimeType||'audio/mp4'});await transcribeBlob(blob);};if('speechSynthesis'in window)speechSynthesis.cancel();mediaRec.start();setMicUI(true);}
 function stopRec(){if(mediaRec&&mediaRec.state!=='inactive')mediaRec.stop();setMicUI(false);const im=$('interim');im.textContent='認識中…';im.classList.add('show');}
-async function transcribeBlob(blob){
-  try{const b64=await blobToB64(blob);const r=await fetch('/api/transcribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({audio:b64,mime:blob.type})});const j=await r.json();const t=(j.text||'').trim();$('interim').classList.remove('show');$('interim').textContent='';if(t)addUserTurn(t);else toast('聞き取れなかった。もう一度どうぞ');}
-  catch(e){$('interim').classList.remove('show');$('interim').textContent='';toast('文字起こしに失敗。もう一度');}
-}
+async function transcribeBlob(blob){try{const b64=await blobToB64(blob);const r=await fetch('/api/transcribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({audio:b64,mime:blob.type})});const j=await r.json();const t=(j.text||'').trim();$('interim').classList.remove('show');$('interim').textContent='';if(t)addUserTurn(t);else{if(state.handsfree)setTimeout(()=>{if(state.handsfree&&!state.busy)startHFListen();},250);else toast('聞き取れなかった。もう一度どうぞ');}}catch(e){$('interim').classList.remove('show');$('interim').textContent='';toast('文字起こしに失敗。もう一度');if(state.handsfree)setTimeout(()=>{if(state.handsfree&&!state.busy)startHFListen();},600);}}
 function blobToB64(blob){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(blob);});}
 
-/* ---------- TTS (browser, free) ---------- */
+/* HANDS-FREE (foreground, screen on) */
+let wakeLock=null,audioCtx=null,analyser=null,vadRAF=null;
+async function acquireWake(){try{if('wakeLock'in navigator)wakeLock=await navigator.wakeLock.request('screen');}catch(e){}}
+function releaseWake(){try{if(wakeLock){wakeLock.release();wakeLock=null;}}catch(e){}}
+document.addEventListener('visibilitychange',()=>{if(state.handsfree&&document.visibilityState==='visible'&&!wakeLock)acquireWake();});
+async function toggleHandsFree(){state.handsfree=!state.handsfree;updateHF();if(state.handsfree){await acquireWake();toast('ハンズフリー開始');startHFListen();}else{stopHandsFree();}}
+function updateHF(){$('hfBtn').classList.toggle('on',state.handsfree);$('hfBanner').classList.toggle('show',state.handsfree);$('micLabel').textContent=state.handsfree?'ハンズフリー中（タップで終了）':'タップして話す';}
+function stopHandsFree(){state.handsfree=false;updateHF();stopVAD();if(mediaRec&&mediaRec.state==='recording'){try{mediaRec.onstop=null;mediaRec.stop();}catch(e){}}if(micStream){try{micStream.getTracks().forEach(t=>t.stop());}catch(e){}}stopMic();releaseWake();setMicUI(false);$('interim').classList.remove('show');}
+function stopVAD(){if(vadRAF)cancelAnimationFrame(vadRAF);vadRAF=null;if(audioCtx){try{audioCtx.close();}catch(e){}audioCtx=null;}}
+async function startHFListen(){
+  if(!state.handsfree||state.busy)return;
+  if(MODE!=='backend'){startWebSpeech();return;}
+  try{micStream=await navigator.mediaDevices.getUserMedia({audio:true});}catch(e){toast('マイク許可が必要');stopHandsFree();return;}
+  chunks=[];const mt=MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':'';mediaRec=mt?new MediaRecorder(micStream,{mimeType:mt}):new MediaRecorder(micStream);
+  let spoke=false;
+  mediaRec.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data);};
+  mediaRec.onstop=async()=>{stopVAD();try{micStream.getTracks().forEach(t=>t.stop());}catch(e){}const blob=new Blob(chunks,{type:mediaRec.mimeType||'audio/mp4'});if(spoke){await transcribeBlob(blob);}else if(state.handsfree){setTimeout(()=>{if(state.handsfree&&!state.busy)startHFListen();},250);}};
+  if('speechSynthesis'in window)speechSynthesis.cancel();
+  mediaRec.start();setMicUI(true);$('interim').textContent='聞いています…';$('interim').classList.add('show');
+  audioCtx=new (window.AudioContext||window.webkitAudioContext)();const src=audioCtx.createMediaStreamSource(micStream);analyser=audioCtx.createAnalyser();analyser.fftSize=1024;src.connect(analyser);const buf=new Uint8Array(analyser.fftSize);
+  const SPEAK=0.05,SIL=1300,MAX=14000,MIN=300;let speakStart=0,lastVoice=performance.now();const startT=lastVoice;
+  const tick=()=>{
+    if(!state.handsfree||!mediaRec||mediaRec.state!=='recording'){return;}
+    analyser.getByteTimeDomainData(buf);let sum=0;for(let i=0;i<buf.length;i++){const v=(buf[i]-128)/128;sum+=v*v;}const rms=Math.sqrt(sum/buf.length);const now=performance.now();
+    if(rms>SPEAK){if(!spoke){spoke=true;speakStart=now;}lastVoice=now;}
+    if(spoke&&(now-speakStart>MIN)&&(now-lastVoice>SIL)){endHFTurn();return;}
+    if(now-startT>MAX){endHFTurn();return;}
+    vadRAF=requestAnimationFrame(tick);
+  };
+  vadRAF=requestAnimationFrame(tick);
+}
+function endHFTurn(){stopVAD();if(mediaRec&&mediaRec.state==='recording'){try{mediaRec.stop();}catch(e){}}setMicUI(false);$('interim').textContent='認識中…';}
+
+/* TTS */
 let enVoice=null;
 function pickVoice(){if(!('speechSynthesis'in window))return;const vs=speechSynthesis.getVoices();enVoice=vs.find(v=>/en[-_]US/i.test(v.lang)&&/female|samantha|google US|aria|jenny/i.test(v.name))||vs.find(v=>/en[-_]US/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang))||null;}
 if('speechSynthesis'in window){speechSynthesis.onvoiceschanged=pickVoice;pickVoice();}
-function speakWeb(text){if(!('speechSynthesis'in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='en-US';u.rate=state.rate;if(enVoice)u.voice=enVoice;speechSynthesis.speak(u);}
-async function tts(text){if(!text)return;speakWeb(text);}
+function speakWeb(text,ondone){if(!('speechSynthesis'in window)){if(ondone)ondone();return;}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='en-US';u.rate=state.rate;if(enVoice)u.voice=enVoice;if(ondone)u.onend=ondone;speechSynthesis.speak(u);}
+function tts(text,ondone){if(!text){if(ondone)ondone();return;}speakWeb(text,ondone);}
 
-/* ---------- CARDS / NOTES ---------- */
+/* NOTES */
 const FOLDERS=[{k:'word',icon:'🔤',t:'単語',d:'words'},{k:'idiom',icon:'🧩',t:'熟語',d:'idioms'},{k:'sentence',icon:'📝',t:'文章',d:'sentences'}];
-function renderCards(){
-  const inner=$('cardsInner');
-  if(!state.noteFolder){
-    const counts={};FOLDERS.forEach(f=>counts[f.k]=state.cards.filter(c=>c.type===f.k).length);
-    inner.innerHTML=`<div class="eyebrow">ノート</div>
-      <div class="note-folders">
-        ${FOLDERS.map(f=>`<button class="folder" onclick="openFolder('${f.k}')"><div class="fi">${f.icon}</div><div><div class="ft">${f.t}</div><div class="fd">${f.d}</div></div><div class="fc">${counts[f.k]}</div></button>`).join('')}
-      </div>
-      ${state.cards.length?'':'<div class="empty"><div class="ei">🌱</div><h3>まだ何もないよ</h3><p>会話中にAIの英語をタップ →<br>調べてノートに保存しよう。</p></div>'}`;
-    return;
-  }
-  const f=FOLDERS.find(x=>x.k===state.noteFolder);
-  const list=state.cards.filter(c=>c.type===state.noteFolder);
-  inner.innerHTML=`
-    <div class="crumb"><button class="bk" onclick="openFolder(null)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><div class="ct"><span class="g">ノート ›</span> ${f.t}</div></div>
-    ${list.length?list.map(cardHtml).join(''):'<div class="empty"><div class="ei">'+f.icon+'</div><h3>'+f.t+'はまだ空</h3><p>会話中に保存するとここに入るよ。</p></div>'}`;
-}
-function cardHtml(c){
-  const ex=c.example_en?`<div class="ex"><span class="en">${esc(c.example_en)}</span><br>${esc(c.example_ja||'')}</div>`:'';
-  const note=c.note_ja?`<div class="ex">📝 ${esc(c.note_ja)}</div>`:'';
-  return `<div class="card">
-    <button class="del" onclick="delCard('${c.id}')" aria-label="削除"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
-    <div><span class="w">${esc(c.front)}</span>${c.pos?`<span class="pos">${esc(c.pos)}</span>`:''}</div>
-    <div class="m">${esc(c.meaning_ja)}</div>${ex}${note}</div>`;
-}
+function renderCards(){const inner=$('cardsInner');if(!state.noteFolder){const counts={};FOLDERS.forEach(f=>counts[f.k]=state.cards.filter(c=>c.type===f.k).length);inner.innerHTML=`<div class="section-title">ノート</div><div class="note-folders">${FOLDERS.map(f=>`<button class="folder" onclick="openFolder('${f.k}')"><div class="fi">${f.icon}</div><div><div class="ft">${f.t}</div><div class="fd">${f.d}</div></div><div class="fc">${counts[f.k]}</div></button>`).join('')}</div>${state.cards.length?'':'<div class="empty"><div class="ei">🌱</div><h3>まだ何もないよ</h3><p>会話中にAIの英語をタップ →<br>調べてノートに保存しよう。</p></div>'}`;return;}const f=FOLDERS.find(x=>x.k===state.noteFolder);const list=state.cards.filter(c=>c.type===state.noteFolder);inner.innerHTML=`<div class="crumb"><button class="bk" onclick="openFolder(null)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><div class="ct"><span class="g">ノート ›</span> ${f.t}</div></div>${list.length?list.map(cardHtml).join(''):'<div class="empty"><div class="ei">'+f.icon+'</div><h3>'+f.t+'はまだ空</h3><p>会話中に保存するとここに入るよ。</p></div>'}`;}
+function cardHtml(c){const ex=c.example_en?`<div class="ex"><span class="e2">${esc(c.example_en)}</span><br>${esc(c.example_ja||'')}</div>`:'';const note=c.note_ja?`<div class="ex">📝 ${esc(c.note_ja)}</div>`:'';return `<div class="ncard"><button class="del" onclick="delCard('${c.id}')" aria-label="削除"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button><div><span class="w">${esc(c.front)}</span>${c.pos?`<span class="pos-chip pos">${esc(c.pos)}</span>`:''}</div><div class="m">${esc(c.meaning_ja)}</div>${ex}${note}</div>`;}
 function openFolder(k){state.noteFolder=k;renderCards();}
 function delCard(id){state.cards=state.cards.filter(c=>c.id!==id);renderCards();}
 
-/* ---------- SETTINGS ---------- */
+/* SETTINGS */
 const LEVELS=['A2','B1','B2','C1'];
 function buildLevelSeg(){$('levelSeg').innerHTML=LEVELS.map(l=>`<button class="${l===state.level?'on':''}" onclick="setLevel('${l}')">${l}</button>`).join('');}
 function setLevel(l){state.level=l;$('levelChip').textContent=l;if(state.mode)$('chatLevel').textContent='Level '+l;buildLevelSeg();toast('レベルを '+l+' に');}
-function buildToneList(){const el=$('toneList');if(!el)return;el.innerHTML=TONES.map(t=>`<button class="tone-opt${t.k===state.tone?' on':''}" onclick="setTone('${t.k}')"><div class="ti"><div class="tn">${t.t}</div><div class="td">${t.d}</div></div><div class="tc">${t.k===state.tone?'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>':''}</div></button>`).join('');}
-function setTone(k){state.tone=k;buildToneList();const t=TONES.find(x=>x.k===k);toast('口調：'+t.t);}
+function buildToneList(){const el=$('toneList');if(!el)return;el.innerHTML=TONES.map(t=>`<button class="tone-opt${t.k===state.tone?' on':''}" onclick="setTone('${t.k}')"><div style="flex:1"><div class="tn">${t.t}</div><div class="td">${t.d}</div></div><div class="tc">${t.k===state.tone?'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>':''}</div></button>`).join('');}
+function setTone(k){state.tone=k;buildToneList();const t=TONES.find(x=>x.k===k);toast('口調：'+t.t+' に変更');}
 function toggleVoice(){state.voiceOn=!state.voiceOn;if(!state.voiceOn&&'speechSynthesis'in window)speechSynthesis.cancel();syncSettingsUI();}
 function setRate(v){state.rate=parseFloat(v);$('rateLabel').textContent=RATE_TXT(v);}
 function toggleJaDefault(){state.jaDefault=!state.jaDefault;syncSettingsUI();}
 function syncSettingsUI(){$('tgVoice').classList.toggle('on',state.voiceOn);$('voiceToggle').classList.toggle('on',state.voiceOn);$('tgJa').classList.toggle('on',state.jaDefault);$('rateRange').value=state.rate;$('rateLabel').textContent=RATE_TXT(state.rate);buildLevelSeg();buildToneList();}
 function updateModePill(){const p=$('modePill'),t=$('modeText');if(!p)return;const live=MODE==='backend';p.classList.toggle('live',live);t.textContent=live?'デプロイ済み（Groq無料枠）':'プレビュー（ブラウザ音声）';}
 
-/* ---------- INIT ---------- */
+/* INIT */
 renderModeGrid();buildLevelSeg();syncSettingsUI();$('levelChip').textContent=state.level;setTab('home');
 detectMode();
 if('serviceWorker'in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));}
