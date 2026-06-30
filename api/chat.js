@@ -1,5 +1,5 @@
-// Conversation turn -> Groq free tier (OpenAI-compatible). Returns { text }.
-// Swap MODEL to "qwen/qwen3.6-27b" if you want stronger Japanese.
+// Conversation turn -> Groq free tier (OpenAI-compatible). Returns { text } (JSON string; client parses).
+// Free model as of 2026-06. Swap to "qwen/qwen3.6-27b" if you want stronger Japanese.
 const MODEL = "openai/gpt-oss-120b";
 module.exports = async (req, res) => {
   if (req.method !== "POST") return res.status(405).end();
@@ -11,7 +11,7 @@ module.exports = async (req, res) => {
       body: JSON.stringify({
         model: MODEL,
         messages: [{ role: "system", content: system }, ...(messages || [])],
-        max_tokens: 400,
+        max_tokens: 800,
         temperature: 0.7
       })
     });
