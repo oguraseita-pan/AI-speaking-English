@@ -120,7 +120,7 @@ input{font-family:inherit}
 .hint{text-align:center;color:var(--faint);font-size:11.5px;padding:4px 20px 0}
 
 /* ---- TALK: dock (mic at bottom, layout stable) ---- */
-.dock{flex:0 0 auto;background:var(--bg);border-top:1px solid var(--border);padding:9px 14px max(10px,env(safe-area-inset-bottom))}
+.dock{flex:0 0 auto;background:var(--bg);border-top:1px solid var(--border);padding:6px 14px max(5px,env(safe-area-inset-bottom))}
 .selbar{display:none;align-items:center;gap:8px;background:var(--primary-soft);border:1px solid var(--border);border-radius:12px;padding:7px 8px 7px 12px;margin-bottom:9px}
 .selbar.show{display:flex}
 .selbar .txt{flex:1;font-size:13px;color:var(--primary-ink);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -133,7 +133,7 @@ input{font-family:inherit}
 .input-row input::placeholder{color:var(--faint)}
 .send{width:36px;height:36px;border-radius:50%;background:var(--primary-soft);color:var(--primary-ink);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
 .send:disabled{opacity:.35}
-.mic-dock{display:flex;justify-content:center;margin-top:11px}
+.mic-dock{display:flex;justify-content:center;margin-top:8px}
 .mic-wrap{position:relative}
 .mic{width:62px;height:62px;border-radius:50%;background:var(--primary);color:var(--user-ink);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(111,194,139,.32);position:relative;z-index:2;transition:transform .12s}
 .mic:active{transform:scale(.93)}
@@ -141,7 +141,7 @@ input{font-family:inherit}
 .mic-wrap.live::before,.mic-wrap.live::after{content:"";position:absolute;inset:0;border-radius:50%;background:var(--danger);opacity:.3;animation:ring 1.8s ease-out infinite;z-index:1}
 .mic-wrap.live::after{animation-delay:.9s}
 @keyframes ring{0%{transform:scale(1);opacity:.3}100%{transform:scale(2);opacity:0}}
-.mic-label{text-align:center;font-size:11px;color:var(--faint);margin-top:6px}
+.mic-label{text-align:center;font-size:10.5px;color:var(--faint);margin-top:4px}
 
 /* ---- bottom sheet (lookup) ---- */
 .sheet-bg{position:absolute;inset:0;background:rgba(0,0,0,.5);z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
@@ -207,6 +207,14 @@ input[type=range]{flex:1;accent-color:var(--primary)}
 .mode-pill .dot{width:7px;height:7px;border-radius:50%;background:var(--faint)}
 .mode-pill.live .dot{background:var(--primary)}
 
+.tone-list{display:flex;flex-direction:column;gap:7px}
+.tone-opt{display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:11px 12px;text-align:left;width:100%}
+.tone-opt.on{border-color:var(--primary);background:var(--primary-soft)}
+.tone-opt .ti{flex:1}
+.tone-opt .tn{font-size:14px;font-weight:700}
+.tone-opt .td{font-size:11.5px;color:var(--muted);margin-top:1px}
+.tone-opt .tc{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);flex:0 0 auto;display:flex;align-items:center;justify-content:center}
+.tone-opt.on .tc{border-color:var(--primary);background:var(--primary);color:var(--user-ink)}
 #toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%) translateY(20px);z-index:60;background:#04100A;border:1px solid var(--border);color:#fff;font-size:13px;font-weight:600;padding:10px 16px;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-width:88%;text-align:center}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .hidden{display:none!important}
@@ -278,6 +286,12 @@ input[type=range]{flex:1;accent-color:var(--primary)}
           <div class="set-row"><div class="info"><div class="t">レベル</div><div class="d">語彙と話す速さ（Sproutと同じCEFR）</div></div><div class="seg2" id="levelSeg"></div></div>
         </div>
         <div class="set-group">
+          <div class="set-row" style="display:block">
+            <div class="info" style="margin-bottom:11px"><div class="t">AIの口調</div><div class="d">話し方のキャラクターを選ぶ</div></div>
+            <div class="tone-list" id="toneList"></div>
+          </div>
+        </div>
+        <div class="set-group">
           <div class="set-row"><div class="info"><div class="t">AIの音声</div><div class="d">返答を読み上げる</div></div><button class="toggle on" id="tgVoice" onclick="toggleVoice()"></button></div>
           <div class="set-row"><div class="info"><div class="t">読み上げ速度</div><div class="d" id="rateLabel">0.95×</div></div><input type="range" id="rateRange" min="0.6" max="1.2" step="0.05" value="0.95" oninput="setRate(this.value)"></div>
           <div class="set-row"><div class="info"><div class="t">日本語訳を最初から表示</div><div class="d">返答の下に訳を出す</div></div><button class="toggle" id="tgJa" onclick="toggleJaDefault()"></button></div>
@@ -309,7 +323,7 @@ input[type=range]{flex:1;accent-color:var(--primary)}
 let MODE='demo';
 async function detectMode(){try{const r=await fetch('/api/health',{cache:'no-store'});if(r.ok){const j=await r.json();if(j&&j.ok)MODE='backend';}}catch(e){}updateModePill();}
 
-const state={tab:'home',mode:null,opener:null,level:'B1',voiceOn:true,rate:0.95,jaDefault:false,
+const state={tab:'home',mode:null,opener:null,level:'B1',voiceOn:true,rate:0.95,jaDefault:false,tone:'friendly',
   cards:[],history:[],busy:false,listening:false,noteFolder:null,
   sel:{bubble:null,a:null,b:null},pending:null};
 
@@ -344,6 +358,14 @@ const DAILY=[
  {q:"If you could have dinner with anyone, who would it be?",ja:"誰とでも夕食を共にできるなら、誰がいい？"},
  {q:"What's the weather like where you are today?",ja:"今いる場所の天気はどう？"},
  {q:"What's a goal you're working on right now?",ja:"今取り組んでいる目標は？"},
+];
+const TONES=[
+ {k:'friendly',t:'フレンドリー',d:'親しみやすくカジュアル（標準）',p:'Speak in a friendly, casual, warm and approachable tone.'},
+ {k:'polite',t:'ていねい',d:'丁寧でフォーマル。ビジネス向き',p:'Speak politely and somewhat formally, suitable for business or first meetings.'},
+ {k:'tutor',t:'熱心な先生',d:'よく直してくれるコーチ風',p:'Act as an enthusiastic English tutor: stay encouraging but correct the learner\'s mistakes a bit more actively, while keeping the conversation flowing.'},
+ {k:'cheerful',t:'明るい・元気',d:'テンション高めで前向き',p:'Be upbeat, energetic and cheerful, with lots of positive encouragement.'},
+ {k:'calm',t:'おだやか',d:'ゆっくり・やさしい言葉で',p:'Be calm and gentle. Speak a little slower and use simpler words and shorter sentences.'},
+ {k:'native',t:'ネイティブ風',d:'くだけた自然な言い回し',p:'Talk like a casual native speaker, using natural everyday expressions and light slang.'},
 ];
 function todayQ(){const s=new Date();const start=new Date(s.getFullYear(),0,0);const day=Math.floor((s-start)/86400000);return DAILY[day%DAILY.length];}
 
@@ -528,6 +550,7 @@ function systemPrompt(){
   return `You are a warm, encouraging English conversation partner inside a language-learning app for a Japanese learner.
 Setting: ${state.mode.ctx}.
 Learner CEFR level: ${state.level}. Match vocabulary, sentence length and pace to this level.
+Tone: ${(TONES.find(t=>t.k===state.tone)||TONES[0]).p}
 Rules:
 - Keep replies short and natural: 1–2 sentences, then ask a follow-up question.
 - Stay in character. Do not lecture or break the role-play.
@@ -648,10 +671,12 @@ function delCard(id){state.cards=state.cards.filter(c=>c.id!==id);renderCards();
 const LEVELS=['A2','B1','B2','C1'];
 function buildLevelSeg(){$('levelSeg').innerHTML=LEVELS.map(l=>`<button class="${l===state.level?'on':''}" onclick="setLevel('${l}')">${l}</button>`).join('');}
 function setLevel(l){state.level=l;$('levelChip').textContent=l;if(state.mode)$('chatLevel').textContent='Level '+l;buildLevelSeg();toast('レベルを '+l+' に');}
+function buildToneList(){const el=$('toneList');if(!el)return;el.innerHTML=TONES.map(t=>`<button class="tone-opt${t.k===state.tone?' on':''}" onclick="setTone('${t.k}')"><div class="ti"><div class="tn">${t.t}</div><div class="td">${t.d}</div></div><div class="tc">${t.k===state.tone?'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>':''}</div></button>`).join('');}
+function setTone(k){state.tone=k;buildToneList();const t=TONES.find(x=>x.k===k);toast('口調：'+t.t);}
 function toggleVoice(){state.voiceOn=!state.voiceOn;if(!state.voiceOn&&'speechSynthesis'in window)speechSynthesis.cancel();syncSettingsUI();}
 function setRate(v){state.rate=parseFloat(v);$('rateLabel').textContent=RATE_TXT(v);}
 function toggleJaDefault(){state.jaDefault=!state.jaDefault;syncSettingsUI();}
-function syncSettingsUI(){$('tgVoice').classList.toggle('on',state.voiceOn);$('voiceToggle').classList.toggle('on',state.voiceOn);$('tgJa').classList.toggle('on',state.jaDefault);$('rateRange').value=state.rate;$('rateLabel').textContent=RATE_TXT(state.rate);buildLevelSeg();}
+function syncSettingsUI(){$('tgVoice').classList.toggle('on',state.voiceOn);$('voiceToggle').classList.toggle('on',state.voiceOn);$('tgJa').classList.toggle('on',state.jaDefault);$('rateRange').value=state.rate;$('rateLabel').textContent=RATE_TXT(state.rate);buildLevelSeg();buildToneList();}
 function updateModePill(){const p=$('modePill'),t=$('modeText');if(!p)return;const live=MODE==='backend';p.classList.toggle('live',live);t.textContent=live?'デプロイ済み（Groq無料枠）':'プレビュー（ブラウザ音声）';}
 
 /* ---------- INIT ---------- */
