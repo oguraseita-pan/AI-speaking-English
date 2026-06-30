@@ -73,7 +73,10 @@ input{font-family:inherit}
 .hero .tag{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:#CFEFDD;background:rgba(255,255,255,.13);padding:5px 11px;border-radius:999px;margin-bottom:13px}
 .hero .q{font-family:var(--font-en);font-size:21px;font-weight:500;color:#fff;line-height:1.42;position:relative;z-index:1}
 .hero .qja{font-size:13px;color:#CBE7D7;margin-top:9px;position:relative;z-index:1}
-.hero .go{margin-top:17px;background:#fff;color:#0E2A1F;position:relative;z-index:1}
+.hero-btns{display:flex;gap:9px;margin-top:17px;position:relative;z-index:1}
+.hero .go{flex:1;background:#fff;color:#0E2A1F}
+.hero .alt{flex:0 0 auto;background:rgba(255,255,255,.16);color:#fff;padding:13px 13px}
+.end-btn{font-size:12.5px;font-weight:700;color:var(--danger);background:rgba(232,115,106,.13);padding:8px 13px;border-radius:10px}
 .chips{display:flex;flex-wrap:wrap;gap:9px}
 .chip{display:flex;align-items:center;gap:7px;background:var(--surface);box-shadow:var(--shadow);border-radius:13px;padding:11px 14px;font-size:13.5px;font-weight:600}
 .chip:active{transform:scale(.97)}.chip .e{font-size:17px}
@@ -255,6 +258,7 @@ input[type=range]{flex:1;accent-color:var(--green)}
       <button class="ic-btn" onclick="exitMode()" aria-label="戻る"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
       <div><div class="ttl" id="chatTitle">Free talk</div><div class="lv" id="chatLevel">Level B1</div></div>
       <div class="right">
+        <button class="end-btn" onclick="endConversation()">終了</button>
         <button class="ic-btn on" id="voiceToggle" onclick="toggleVoice()" aria-label="音声"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 010 7"/><path d="M19 5a9 9 0 010 14"/></svg></button>
       </div>
     </div>
@@ -310,7 +314,7 @@ let MODE='demo';
 async function detectMode(){try{const r=await fetch('/api/health',{cache:'no-store'});if(r.ok){const j=await r.json();if(j&&j.ok)MODE='backend';}}catch(e){}updateModePill();}
 
 const state={tab:'home',mode:null,opener:null,level:'B1',voiceOn:true,rate:0.95,jaDefault:false,tone:'friendly',
-  theme:'dark',autoEnd:true,cards:[],history:[],busy:false,listening:false,noteFolder:null,handsfree:false,
+  theme:'dark',autoEnd:true,homeQ:null,cards:[],history:[],busy:false,listening:false,noteFolder:null,handsfree:false,
   sel:{bubble:null,a:null,b:null},pending:null};
 
 const SCENARIOS=[
@@ -366,14 +370,14 @@ function setTab(tab){state.tab=tab;['home','talk','cards','settings'].forEach(t=
 /* HOME */
 function greet(){const h=new Date().getHours();if(h<5)return'こんばんは';if(h<11)return'おはよう';if(h<18)return'こんにちは';return'こんばんは';}
 function renderHome(){
-  const q=todayQ();const today=new Date();today.setHours(0,0,0,0);
+  const q=state.homeQ||todayQ();const today=new Date();today.setHours(0,0,0,0);
   const todayN=state.cards.filter(c=>c.created>=today.getTime()).length;const total=state.cards.length;
   const resume=state.mode&&state.history.length?`<button class="resume" onclick="resumeChat()"><div class="ri">${state.mode.icon||'💬'}</div><div><div class="rt">会話のつづき</div><div class="rd">${esc(state.mode.title)} を再開</div></div><span class="arr"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></span></button>`:'';
   $('homeInner').innerHTML=`
     <div class="h1">${greet()}、Seita 👋</div>
     <p class="sub">今日のひとことから、英語で話そう。</p>
     <div class="home-stats"><div class="hstat"><div class="n">${total}</div><div class="l">ノートの総数</div></div><div class="hstat"><div class="n">${todayN}</div><div class="l">今日 追加</div></div></div>
-    <div class="hero"><span class="tag">☀️ 今日の質問</span><div class="q">${esc(q.q)}</div><div class="qja">${esc(q.ja)}</div><button class="btn go" onclick="startDaily()">この質問で話す <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
+    <div class="hero"><span class="tag">☀️ 今日の質問</span><div class="q">${esc(q.q)}</div><div class="qja">${esc(q.ja)}</div><div class="hero-btns"><button class="btn go" onclick="startDaily()">この質問で話す <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button><button class="btn alt" onclick="pickAnotherQ()" aria-label="別の質問"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg></button></div></div>
     ${resume}
     <div class="section-title">サッと始める</div>
     <div class="chips">
@@ -383,7 +387,8 @@ function renderHome(){
       <button class="chip" onclick="setTab('talk')"><span class="e">⋯</span>もっと見る</button>
     </div>`;
 }
-function startDaily(){const q=todayQ();beginConversation(SCENARIOS[0],`(Open the conversation by warmly asking the learner this exact question, then react naturally to their answer: "${q.q}")`);}
+function startDaily(){const q=state.homeQ||todayQ();beginConversation(SCENARIOS[0],`(Open the conversation by warmly asking the learner this exact question, then react naturally to their answer: "${q.q}")`);}
+function pickAnotherQ(){const cur=(state.homeQ||todayQ()).q;let n=state.homeQ;let tries=0;do{n=DAILY[Math.floor(Math.random()*DAILY.length)];tries++;}while(n.q===cur&&tries<10);state.homeQ=n;renderHome();}
 function resumeChat(){setTab('talk');$('screen-talk').classList.remove('hidden');$('chatView').classList.remove('hidden');}
 
 /* TALK */
@@ -397,12 +402,12 @@ function beginConversation(modeObj,opener){
   updateHF();if(state.handsfree)acquireWake();
   getAIResponse();
 }
-function exitMode(){
-  const wasHF=state.handsfree;const hist=state.history.slice();
+function cleanupChat(){
   stopListening();stopVAD();if(micStream){try{micStream.getTracks().forEach(t=>t.stop());}catch(e){}}releaseWake();if('speechSynthesis'in window)speechSynthesis.cancel();
   state.handsfree=false;updateHF();state.mode=null;clearSel();$('chatView').classList.add('hidden');
-  if(wasHF&&hist.some(t=>t.role==='user'))runReview(hist);
 }
+function exitMode(){cleanupChat();}
+function endConversation(){const hist=state.history.slice();cleanupChat();if(hist.some(t=>t.role==='user'))runReview(hist);else toast('まだ会話がないよ');}
 function scrollDown(){const s=$('msgScroll');requestAnimationFrame(()=>s.scrollTop=s.scrollHeight);}
 function renderMessages(){const box=$('messages');box.innerHTML='';state.history.forEach((t,i)=>{t.role==='user'?appendUserEl(t,i):appendAIEl(t);});scrollDown();}
 function appendUserEl(item,index){const row=document.createElement('div');row.className='row user';row.innerHTML=`<div class="bubble">${esc(item.text)}</div><button class="redo" onclick="redoFrom(${index})"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"/><path d="M3.5 9a9 9 0 1 1-.5 6"/></svg>もう一度</button>`;$('messages').appendChild(row);scrollDown();}
@@ -543,7 +548,8 @@ function updateHF(){$('hfBanner').classList.toggle('show',state.handsfree);$('mi
 let enVoice=null;
 function pickVoice(){if(!('speechSynthesis'in window))return;const vs=speechSynthesis.getVoices();enVoice=vs.find(v=>/en[-_]US/i.test(v.lang)&&/female|samantha|google US|aria|jenny/i.test(v.name))||vs.find(v=>/en[-_]US/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang))||null;}
 if('speechSynthesis'in window){speechSynthesis.onvoiceschanged=pickVoice;pickVoice();}
-function speakWeb(text,ondone){if(!('speechSynthesis'in window)){if(ondone)ondone();return;}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='en-US';u.rate=state.rate;if(enVoice)u.voice=enVoice;if(ondone)u.onend=ondone;speechSynthesis.speak(u);}
+const TONE_VOICE={friendly:{r:1,p:1.02},polite:{r:.96,p:1},tutor:{r:.97,p:1.02},cheerful:{r:1.08,p:1.16},calm:{r:.84,p:.94},native:{r:1.06,p:1}};
+function speakWeb(text,ondone){if(!('speechSynthesis'in window)){if(ondone)ondone();return;}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='en-US';const tv=TONE_VOICE[state.tone]||{r:1,p:1};u.rate=Math.min(1.4,Math.max(.5,state.rate*tv.r));u.pitch=tv.p;if(enVoice)u.voice=enVoice;if(ondone)u.onend=ondone;speechSynthesis.speak(u);}
 function tts(text,ondone){if(!text){if(ondone)ondone();return;}speakWeb(text,ondone);}
 
 /* NOTES */
