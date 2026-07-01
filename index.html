@@ -289,6 +289,7 @@ input[type=range]{flex:1;accent-color:var(--green)}
       <div class="set-row"><div class="info"><div class="t">レベル</div><div class="d">語彙と話す速さ（Sproutと同じCEFR）</div></div><div class="seg2" id="levelSeg"></div></div>
       <div class="set-row"><div class="info"><div class="t">テーマ</div><div class="d">見た目の色味</div></div><div class="seg2" id="themeSeg"></div></div>
       <div class="set-row"><div class="info"><div class="t">会話の区切り方</div><div class="d">話し終わりの判定</div></div><div class="seg2" id="endSeg"></div></div>
+      <div class="set-row"><div class="info"><div class="t">無音の待ち時間</div><div class="d">自動のとき、何秒黙ったら“話し終わり”と判定するか</div></div><div class="seg2" id="silenceSeg"></div></div>
     </div>
     <div class="set-group"><div class="set-row" style="display:block"><div class="info" style="margin-bottom:11px"><div class="t">AIの口調</div><div class="d">話し方のキャラクター（次の発話から反映）</div></div><div class="tone-list" id="toneList"></div></div></div>
     <div class="set-group">
@@ -296,7 +297,11 @@ input[type=range]{flex:1;accent-color:var(--green)}
       <div class="set-row"><div class="info"><div class="t">読み上げ速度</div><div class="d" id="rateLabel">0.95×</div></div><input type="range" id="rateRange" min="0.6" max="1.2" step="0.05" value="0.95" oninput="setRate(this.value)"></div>
       <div class="set-row"><div class="info"><div class="t">日本語訳を最初から表示</div><div class="d">返答の下に訳を出す</div></div><button class="toggle" id="tgJa" onclick="toggleJaDefault()"></button></div>
     </div>
-    <div class="set-group"><div class="set-row" style="display:block"><div class="info" style="margin-bottom:11px"><div class="t">読み上げの声</div><div class="d">▶︎で試聴。iPhoneのSafariでは、あとから追加ダウンロードした高品質音声は選べない仕様です（端末標準の声のみ）。</div></div><div class="tone-list" id="voiceList"></div></div></div>
+    <div class="set-group">
+      <div class="set-row"><div class="info"><div class="t">声の品質</div><div class="d">高品質＝自然なクラウド音声（Groq・無料枠）。iPhoneの設定不要でiOS/Android共通</div></div><div class="seg2" id="qualitySeg"></div></div>
+      <div class="set-row" style="display:block" id="voiceListWrap"><div class="info" style="margin-bottom:11px"><div class="t">読み上げの声（標準）</div><div class="d">▶︎で試聴。iPhoneのSafariでは追加DLした高品質音声は選べません（端末標準のみ）</div></div><div class="tone-list" id="voiceList"></div></div>
+      <div class="set-row" style="display:none" id="groqListWrap"><div class="info" style="margin-bottom:11px"><div class="t">読み上げの声（高品質・Groq）</div><div class="d">▶︎で試聴して好みの声を選んでね</div></div><div class="tone-list" id="groqList"></div></div>
+    </div>
     <div class="note-box"><b>ハンズフリー</b>は会話タブの「🎧 ハンズフリー」から。話し終わると自動で続き、終了時にミス・言い換えをまとめてレビューします。Webの仕様上<b>画面オン前提</b>（画面オフ/バックグラウンドは不可）。</div>
   </div>
 
@@ -317,7 +322,7 @@ let MODE='demo';
 async function detectMode(){try{const r=await fetch('/api/health',{cache:'no-store'});if(r.ok){const j=await r.json();if(j&&j.ok)MODE='backend';}}catch(e){}updateModePill();}
 
 const state={tab:'home',mode:null,opener:null,level:'B1',voiceOn:true,rate:0.95,jaDefault:false,tone:'friendly',
-  theme:'dark',autoEnd:true,homeQ:null,voiceName:null,cards:[],history:[],busy:false,listening:false,noteFolder:null,handsfree:false,
+  theme:'dark',autoEnd:true,homeQ:null,voiceName:null,ttsMode:'browser',groqVoice:'Celeste-PlayAI',silenceMs:1300,cards:[],history:[],busy:false,listening:false,noteFolder:null,handsfree:false,
   sel:{bubble:null,a:null,b:null},pending:null};
 
 const SCENARIOS=[
@@ -398,6 +403,7 @@ function resumeChat(){setTab('talk');$('screen-talk').classList.remove('hidden')
 function renderModeGrid(){$('modeGrid').innerHTML=SCENARIOS.map(s=>{const feat=s.free||s.handsfree;return `<button class="mode-card${feat?' feat':''}${s.free?' free':''}${s.handsfree?' hf':''}" onclick="startMode('${s.id}')"><div class="ic">${s.icon}</div><div><div class="mt">${s.title}</div><div class="md">${s.desc}</div></div>${feat?'<span class="arr"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>':''}</button>`;}).join('');}
 function startMode(id){const s=SCENARIOS.find(x=>x.id===id);beginConversation(s,(s.free||s.handsfree)?'(Greet the learner warmly in one short line and invite them to talk about anything.)':'(Greet the learner warmly in one short line and naturally begin the role-play.)');}
 function beginConversation(modeObj,opener){
+  unlockAudio();
   state.mode=modeObj;state.opener=opener;state.history=[];state.handsfree=!!modeObj.handsfree;clearSel();
   setTab('talk');$('screen-talk').classList.remove('hidden');$('chatView').classList.remove('hidden');
   $('chatTitle').textContent=modeObj.title;$('chatLevel').textContent='Level '+state.level;
@@ -406,7 +412,7 @@ function beginConversation(modeObj,opener){
   getAIResponse();
 }
 function cleanupChat(){
-  stopListening();stopVAD();if(micStream){try{micStream.getTracks().forEach(t=>t.stop());}catch(e){}}releaseWake();if('speechSynthesis'in window)speechSynthesis.cancel();
+  stopListening();stopVAD();if(micStream){try{micStream.getTracks().forEach(t=>t.stop());}catch(e){}}releaseWake();stopSpeaking();
   state.handsfree=false;updateHF();state.mode=null;clearSel();$('chatView').classList.add('hidden');
 }
 function exitMode(){cleanupChat();}
@@ -508,18 +514,18 @@ function updateSendState(){$('sendBtn').disabled=!$('textIn').value.trim()||stat
 $('textIn').addEventListener('input',updateSendState);
 function sendTyped(){const v=$('textIn').value.trim();if(!v||state.busy)return;$('textIn').value='';updateSendState();addUserTurn(v);}
 function addUserTurn(text){const idx=state.history.length;state.history.push({role:'user',text});appendUserEl({role:'user',text},idx);getAIResponse();}
-function redoFrom(index){if(state.busy)return;state.history=state.history.slice(0,index);if('speechSynthesis'in window)speechSynthesis.cancel();clearSel();renderMessages();toast('言い直してね');toggleMic();}
+function redoFrom(index){if(state.busy)return;state.history=state.history.slice(0,index);stopSpeaking();clearSel();renderMessages();toast('言い直してね');toggleMic();}
 
 /* ===== STT (manual / auto-VAD / hands-free) ===== */
 function vadOn(){return state.handsfree||state.autoEnd;}
 function setMicUI(live){state.listening=live;$('micBtn').classList.toggle('live',live);$('micWrap').classList.toggle('live',live);if(!state.handsfree)$('micLabel').textContent=live?'タップで停止':'タップして話す';}
-function toggleMic(){if(state.listening){stopListening();return;}if(state.busy)return;startListening();}
+function toggleMic(){unlockAudio();if(state.listening){stopListening();return;}if(state.busy)return;startListening();}
 let recog=null,recogSupported=('webkitSpeechRecognition'in window)||('SpeechRecognition'in window);
 function setupRecog(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;recog=new SR();recog.lang='en-US';recog.interimResults=true;recog.maxAlternatives=1;let finalText='';
   recog.onresult=e=>{let interim='';finalText='';for(let i=0;i<e.results.length;i++){const r=e.results[i];if(r.isFinal)finalText+=r[0].transcript;else interim+=r[0].transcript;}const im=$('interim');im.textContent=(finalText||interim)?'“'+(finalText||interim)+'”':'';im.classList.toggle('show',!!(finalText||interim));};
   recog.onend=()=>{setMicUI(false);$('interim').classList.remove('show');$('interim').textContent='';const t=finalText.trim();if(t)addUserTurn(t);else if(state.handsfree)setTimeout(()=>{if(state.handsfree&&!state.busy)startListening();},300);};
   recog.onerror=ev=>{setMicUI(false);if(ev.error==='not-allowed'||ev.error==='service-not-allowed'){toast('マイクが使えない。入力欄からどうぞ');state.handsfree=false;updateHF();}else if(ev.error==='no-speech'&&!state.handsfree)toast('聞き取れなかった。もう一度どうぞ');};}
-function startWebSpeech(){if(!recogSupported){toast('この環境は音声入力に未対応。入力欄を使ってね');$('textIn').focus();return;}if(!recog)setupRecog();recog.continuous=!vadOn();if('speechSynthesis'in window)speechSynthesis.cancel();try{recog.start();setMicUI(true);}catch(e){}}
+function startWebSpeech(){if(!recogSupported){toast('この環境は音声入力に未対応。入力欄を使ってね');$('textIn').focus();return;}if(!recog)setupRecog();recog.continuous=!vadOn();stopSpeaking();try{recog.start();setMicUI(true);}catch(e){}}
 let mediaRec=null,chunks=[],micStream=null,spokeFlag=false,audioCtx=null,analyser=null,vadRAF=null;
 async function startListening(){
   if(MODE!=='backend'){startWebSpeech();return;}
@@ -527,7 +533,7 @@ async function startListening(){
   chunks=[];spokeFlag=false;const mt=MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':'';mediaRec=mt?new MediaRecorder(micStream,{mimeType:mt}):new MediaRecorder(micStream);
   mediaRec.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data);};
   mediaRec.onstop=async()=>{stopVAD();try{micStream.getTracks().forEach(t=>t.stop());}catch(e){}const blob=new Blob(chunks,{type:mediaRec.mimeType||'audio/mp4'});if(spokeFlag||!vadOn()){await transcribeBlob(blob);}else if(state.handsfree){setTimeout(()=>{if(state.handsfree&&!state.busy)startListening();},250);}else{$('interim').classList.remove('show');}};
-  if('speechSynthesis'in window)speechSynthesis.cancel();
+  stopSpeaking();
   mediaRec.start();setMicUI(true);
   if(vadOn()){$('interim').textContent='聞いています…';$('interim').classList.add('show');startVAD();}
 }
@@ -535,7 +541,7 @@ function stopListening(){if(MODE==='backend'){if(mediaRec&&mediaRec.state==='rec
 function startVAD(){
   try{audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){return;}
   const src=audioCtx.createMediaStreamSource(micStream);analyser=audioCtx.createAnalyser();analyser.fftSize=1024;src.connect(analyser);const buf=new Uint8Array(analyser.fftSize);
-  const SPEAK=0.05,SIL=1300,MAX=14000,MIN=300;let speakStart=0,lastVoice=performance.now();const startT=lastVoice;
+  const SPEAK=0.05,SIL=state.silenceMs||1300,MAX=14000,MIN=300;let speakStart=0,lastVoice=performance.now();const startT=lastVoice;
   const tick=()=>{
     if(!mediaRec||mediaRec.state!=='recording'){return;}
     analyser.getByteTimeDomainData(buf);let sum=0;for(let i=0;i<buf.length;i++){const v=(buf[i]-128)/128;sum+=v*v;}const rms=Math.sqrt(sum/buf.length);const now=performance.now();
@@ -583,7 +589,20 @@ function buildVoiceList(){const el=$('voiceList');if(!el)return;const vs=enVoice
   vs.map(v=>`<div class="tone-opt${state.voiceName===v.name?' on':''}"><button style="flex:1;text-align:left;background:none;padding:0" onclick="setVoice('${v.name.replace(/'/g,"\\'")}')"><div class="tn">${esc(v.name)}${nice(v)?' ✨':''}</div><div class="td">${esc(v.lang)}</div></button><button class="v-play" onclick="previewVoice('${v.name.replace(/'/g,"\\'")}')" aria-label="試聴"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button><div class="tc">${state.voiceName===v.name?'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>':''}</div></div>`).join('');
 }
 function setVoice(name){state.voiceName=name||null;buildVoiceList();if(name)previewVoice(name);toast(name?('声：'+name):'自動選択に');}
-function tts(text,ondone){if(!text){if(ondone)ondone();return;}speakWeb(text,ondone);}
+function tts(text,ondone){if(!text){if(ondone)ondone();return;}if(state.ttsMode==='groq'&&MODE==='backend'){groqTTS(text,ondone);}else{speakWeb(text,ondone);}}
+/* ---- Groq PlayAI cloud TTS (iOS/Android同一・自然な声) ---- */
+const GROQ_VOICES=[['Celeste-PlayAI','Celeste'],['Arista-PlayAI','Arista'],['Gail-PlayAI','Gail'],['Indigo-PlayAI','Indigo'],['Quinn-PlayAI','Quinn'],['Fritz-PlayAI','Fritz'],['Atlas-PlayAI','Atlas'],['Mason-PlayAI','Mason'],['Thunder-PlayAI','Thunder']];
+let player=null,curUrl=null;
+function ensurePlayer(){if(!player){player=new Audio();player.playsInline=true;player.preload='auto';}return player;}
+function unlockAudio(){try{const p=ensurePlayer();if(p._unlocked)return;p.muted=true;p.src='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAgD4AAAB9AAACABAAZGF0YQAAAAA=';const r=p.play();if(r&&r.then)r.then(()=>{p.pause();p.currentTime=0;p.muted=false;p._unlocked=true;}).catch(()=>{p.muted=false;});}catch(e){}}
+function stopAudio(){if(player){try{player.pause();}catch(e){}}if(curUrl){try{URL.revokeObjectURL(curUrl);}catch(e){}curUrl=null;}}
+function stopSpeaking(){if('speechSynthesis'in window)speechSynthesis.cancel();stopAudio();}
+function ttsSpeed(){const tv=TONE_VOICE[state.tone]||{r:1};return Math.min(1.4,Math.max(.7,state.rate*tv.r));}
+function playB64(b64,onended){if(!b64){if(onended)onended();return;}const bin=atob(b64);const arr=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);const blob=new Blob([arr],{type:'audio/wav'});stopAudio();curUrl=URL.createObjectURL(blob);const p=ensurePlayer();p.src=curUrl;p.onended=onended||null;return p.play();}
+async function groqTTS(text,ondone){let done=false;const fin=()=>{if(!done){done=true;if(ondone)ondone();}};
+  try{const r=await fetch('/api/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({input:text,voice:state.groqVoice,speed:ttsSpeed()})});if(!r.ok)throw 0;const j=await r.json();if(!j.audio)throw 0;const pr=playB64(j.audio,fin);const p=ensurePlayer();p.onerror=fin;if(pr&&pr.catch)pr.catch(()=>{if(!done){done=true;speakWeb(text,ondone);}});}
+  catch(e){if(!done){done=true;speakWeb(text,ondone);}}}
+async function previewGroqVoice(v){unlockAudio();toast('読み込み中…');try{const r=await fetch('/api/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({input:"Hi! Let's practice English together.",voice:v,speed:1})});if(!r.ok)throw 0;const j=await r.json();playB64(j.audio);}catch(e){toast('試聴に失敗。無料枠の上限かも');}}
 
 /* NOTES */
 const FOLDERS=[{k:'word',icon:'🔤',t:'単語',d:'words'},{k:'idiom',icon:'🧩',t:'熟語',d:'idioms'},{k:'sentence',icon:'📝',t:'文章',d:'sentences'}];
@@ -600,12 +619,21 @@ function buildThemeSeg(){$('themeSeg').innerHTML=[['dark','ダーク'],['sprout'
 function setTheme(k){state.theme=k;document.documentElement.setAttribute('data-theme',k);$('themeColor').setAttribute('content',k==='sprout'?'#F6F4EE':'#0F1413');buildThemeSeg();}
 function buildEndSeg(){$('endSeg').innerHTML=[['tap','タップ'],['auto','自動']].map(([k,l])=>`<button class="${(state.autoEnd?'auto':'tap')===k?'on':''}" onclick="setEnd('${k}')">${l}</button>`).join('');}
 function setEnd(k){state.autoEnd=(k==='auto');buildEndSeg();toast(state.autoEnd?'無音で自動区切りに':'タップで区切りに');}
+function buildSilenceSeg(){const opts=[[900,'短め'],[1300,'標準'],[2000,'長め']];$('silenceSeg').innerHTML=opts.map(([ms,l])=>`<button class="${state.silenceMs===ms?'on':''}" onclick="setSilence(${ms})">${l}</button>`).join('');}
+function setSilence(ms){state.silenceMs=ms;buildSilenceSeg();toast('無音の待ち時間：'+(ms/1000)+'秒');}
+function buildQualitySeg(){$('qualitySeg').innerHTML=[['browser','標準'],['groq','高品質']].map(([k,l])=>`<button class="${state.ttsMode===k?'on':''}" onclick="setTtsMode('${k}')">${l}</button>`).join('');}
+function setTtsMode(k){if(k==='groq'&&MODE!=='backend'){toast('高品質はデプロイ版でのみ使えます');return;}state.ttsMode=k;buildQualitySeg();updateVoicePanels();toast(k==='groq'?'高品質（Groq）に':'標準に');}
+function updateVoicePanels(){const g=state.ttsMode==='groq';$('voiceListWrap').style.display=g?'none':'block';$('groqListWrap').style.display=g?'block':'none';}
+const CHK='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+const PLAY='<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+function buildGroqList(){const el=$('groqList');if(!el)return;el.innerHTML=GROQ_VOICES.map(([v,l])=>`<div class="tone-opt${state.groqVoice===v?' on':''}"><button style="flex:1;text-align:left;background:none;padding:0" onclick="setGroqVoice('${v}')"><div class="tn">${l}</div><div class="td">${v.replace('-PlayAI','')}</div></button><button class="v-play" onclick="previewGroqVoice('${v}')" aria-label="試聴">${PLAY}</button><div class="tc">${state.groqVoice===v?CHK:''}</div></div>`).join('');}
+function setGroqVoice(v){state.groqVoice=v;buildGroqList();previewGroqVoice(v);toast('声：'+v.replace('-PlayAI',''));}
 function buildToneList(){const el=$('toneList');if(!el)return;el.innerHTML=TONES.map(t=>`<button class="tone-opt${t.k===state.tone?' on':''}" onclick="setTone('${t.k}')"><div style="flex:1"><div class="tn">${t.t}</div><div class="td">${t.d}</div></div><div class="tc">${t.k===state.tone?'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>':''}</div></button>`).join('');}
 function setTone(k){state.tone=k;buildToneList();const t=TONES.find(x=>x.k===k);toast('口調：'+t.t+'（次の発話から）');}
-function toggleVoice(){state.voiceOn=!state.voiceOn;if(!state.voiceOn&&'speechSynthesis'in window)speechSynthesis.cancel();syncSettingsUI();$('voiceToggle').classList.toggle('on',state.voiceOn);}
+function toggleVoice(){state.voiceOn=!state.voiceOn;if(!state.voiceOn)stopSpeaking();syncSettingsUI();$('voiceToggle').classList.toggle('on',state.voiceOn);}
 function setRate(v){state.rate=parseFloat(v);$('rateLabel').textContent=RATE_TXT(v);}
 function toggleJaDefault(){state.jaDefault=!state.jaDefault;syncSettingsUI();}
-function syncSettingsUI(){$('tgVoice').classList.toggle('on',state.voiceOn);$('voiceToggle').classList.toggle('on',state.voiceOn);$('tgJa').classList.toggle('on',state.jaDefault);$('rateRange').value=state.rate;$('rateLabel').textContent=RATE_TXT(state.rate);buildLevelSeg();buildToneList();buildThemeSeg();buildEndSeg();buildVoiceList();}
+function syncSettingsUI(){$('tgVoice').classList.toggle('on',state.voiceOn);$('voiceToggle').classList.toggle('on',state.voiceOn);$('tgJa').classList.toggle('on',state.jaDefault);$('rateRange').value=state.rate;$('rateLabel').textContent=RATE_TXT(state.rate);buildLevelSeg();buildToneList();buildThemeSeg();buildEndSeg();buildSilenceSeg();buildQualitySeg();buildVoiceList();buildGroqList();updateVoicePanels();}
 function updateModePill(){const p=$('modePill'),t=$('modeText');if(!p)return;const live=MODE==='backend';p.classList.toggle('live',live);t.textContent=live?'デプロイ済み（Groq無料枠）':'プレビュー（ブラウザ音声）';}
 
 /* INIT */
