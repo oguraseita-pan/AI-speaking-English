@@ -235,6 +235,36 @@ input[type=range]{flex:1;accent-color:var(--green)}
 .mode-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--surface-2);color:var(--ink-3)}
 .mode-pill .dot{width:7px;height:7px;border-radius:50%;background:var(--ink-3)}.mode-pill.live .dot{background:var(--green)}
 
+.btn-primary{background:var(--green);color:var(--on-green)}
+.btn.full{width:100%}
+#testView{display:none;position:fixed;inset:0;max-width:var(--maxw);margin:0 auto;background:var(--paper);z-index:70;flex-direction:column}
+#testView.show{display:flex}
+.test-head{flex:0 0 auto;display:flex;align-items:center;gap:12px;padding:max(12px,var(--safe-t)) 18px 12px;border-bottom:1px solid var(--line-2)}
+.test-head .x{width:34px;height:34px;border-radius:10px;background:var(--surface);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;color:var(--ink-2);flex:0 0 auto}
+.test-prog{flex:1;height:7px;border-radius:4px;background:var(--surface-2);overflow:hidden}
+.test-prog i{display:block;height:100%;background:var(--green);border-radius:4px;transition:width .3s}
+.test-count{font-size:12px;font-weight:700;color:var(--ink-3);min-width:44px;text-align:right}
+.test-body{flex:1;min-height:0;overflow-y:auto;padding:24px 20px 26px}
+.q-num{font-size:12px;font-weight:700;color:var(--green-ink);letter-spacing:.04em;margin-bottom:12px}
+.q-text{font-family:var(--font-en);font-size:21px;font-weight:500;line-height:1.5;margin-bottom:22px}
+.q-choices{display:flex;flex-direction:column;gap:10px}
+.q-choice{text-align:left;background:var(--surface);box-shadow:var(--shadow);border:1.5px solid transparent;border-radius:14px;padding:14px 16px;font-family:var(--font-en);font-size:16px;transition:transform .1s}
+.q-choice:active{transform:scale(.985);border-color:var(--green)}
+.test-load{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--ink-2);text-align:center}
+.res-badge{margin:6px auto 4px;width:118px;height:118px;border-radius:50%;background:linear-gradient(155deg,#1F6A52,#2FA869);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;box-shadow:var(--shadow)}
+.res-badge .lv{font-family:var(--font-en);font-size:38px;font-weight:600;line-height:1}
+.res-badge .lb{font-size:12px;opacity:.92;margin-top:3px}
+.res-score{text-align:center;font-size:14px;color:var(--ink-2);margin:12px 0 18px}
+.res-score b{color:var(--ink);font-size:17px}
+.skill-row{margin-bottom:12px}
+.skill-row .sh{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px}
+.skill-row .sh .p{color:var(--ink-3);font-weight:700}
+.skill-bar{height:8px;border-radius:5px;background:var(--surface-2);overflow:hidden}
+.skill-bar i{display:block;height:100%;background:var(--green);border-radius:5px;transition:width .4s}
+.weak-box{background:var(--surface);box-shadow:var(--shadow);border-radius:16px;padding:15px;margin-top:10px}
+.weak-box h4{margin:0 0 10px;font-size:13.5px;font-weight:700}
+.weak-item{display:flex;gap:8px;font-size:13.5px;color:var(--ink-2);margin-bottom:7px;line-height:1.55}
+.weak-item::before{content:"•";color:var(--green);font-weight:700}
 #toast{position:fixed;left:50%;bottom:calc(var(--tabbar-h) + var(--safe-b) + 16px);transform:translateX(-50%) translateY(20px);z-index:60;background:var(--ink);color:var(--paper);font-size:13px;font-weight:600;padding:11px 18px;border-radius:13px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-width:88%;text-align:center;box-shadow:var(--shadow-lg)}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .hidden{display:none!important}
@@ -329,6 +359,15 @@ input[type=range]{flex:1;accent-color:var(--green)}
     <button id="tab-settings" onclick="setTab('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>設定</button>
   </div>
 
+  <div id="testView">
+    <div class="test-head">
+      <button class="x" onclick="closeTest()" aria-label="閉じる"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      <div class="test-prog"><i id="testProg" style="width:0%"></i></div>
+      <div class="test-count" id="testCount"></div>
+    </div>
+    <div class="test-body" id="testBody"></div>
+  </div>
+
   <div class="sheet-bg" id="sheetBg" onclick="closeSheet()"></div>
   <div class="sheet" id="sheet"><div class="grip"></div><div id="sheetBody"></div></div>
 </div>
@@ -411,6 +450,7 @@ function renderHome(){
     <p class="sub">今日のひとことから、英語で話そう。</p>
     <div class="home-stats"><div class="hstat"><div class="n">${total}</div><div class="l">ノートの総数</div></div><div class="hstat"><div class="n">${todayN}</div><div class="l">今日 追加</div></div></div>
     <div class="hero"><span class="tag">☀️ 今日の質問</span><div class="q">${esc(q.q)}</div><div class="qja">${esc(q.ja)}</div><div class="hero-btns"><button class="btn go" onclick="startDaily()">この質問で話す <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button><button class="btn alt" onclick="pickAnotherQ()" aria-label="別の質問"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg></button></div></div>
+    <button class="resume" onclick="startTest()"><div class="ri">🎯</div><div><div class="rt">英語レベルテスト</div><div class="rd">1〜2分でCEFR判定・苦手を分析</div></div><span class="arr"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></span></button>
     ${resume}
     <div class="section-title">サッと始める</div>
     <div class="chips">
@@ -423,6 +463,83 @@ function renderHome(){
 function startDaily(){const q=state.homeQ||todayQ();beginConversation(SCENARIOS[0],`(Open the conversation by warmly asking the learner this exact question, then react naturally to their answer: "${q.q}")`);}
 function pickAnotherQ(){const cur=(state.homeQ||todayQ()).q;let n=state.homeQ;let tries=0;do{n=DAILY[Math.floor(Math.random()*DAILY.length)];tries++;}while(n.q===cur&&tries<10);state.homeQ=n;renderHome();}
 function resumeChat(){setTab('talk');$('screen-talk').classList.remove('hidden');$('chatView').classList.remove('hidden');}
+
+/* ===== LEVEL TEST (adaptive CEFR placement) ===== */
+const T_CEFR=['A2','B1','B2','C1'];
+const T_LABEL={A2:'初級',B1:'中級',B2:'中上級',C1:'上級'};
+const T_TYPE={grammar:'文法',vocab:'語彙',usage:'語法'};
+let test=null;
+function closeTest(){$('testView').classList.remove('show');test=null;}
+async function startTest(){
+  $('testView').classList.add('show');$('testProg').style.width='0%';$('testCount').textContent='';
+  $('testBody').innerHTML='<div class="test-load"><span class="mini-spin"></span><div>テストを準備しています…<br><span style="font-size:12px;color:var(--ink-3)">難易度別の問題を作成中</span></div></div>';
+  let pool=null;try{pool=await genTestPool();}catch(e){}
+  if(!pool){$('testBody').innerHTML='<div class="test-load"><div>準備に失敗しました。</div><button class="btn btn-primary" onclick="startTest()">再試行</button><button class="btn" style="color:var(--ink-3)" onclick="closeTest()">閉じる</button></div>';return;}
+  test={pool,used:new Set(),cur:1,n:0,total:12,answers:[],current:null};
+  nextQuestion();
+}
+async function genTestPool(){
+  const sys='You are an English placement-test generator. Create CEFR-graded multiple-choice questions testing grammar, vocabulary and usage, each with EXACTLY one correct answer, unambiguous, with 4 short choices. Respond ONLY with one minified JSON object, no markdown: {"questions":[{"level":"A2","type":"grammar","q":"She ___ to school every day.","choices":["go","goes","going","gone"],"answer":1,"skill_ja":"三人称単数の-s"}]}. Provide EXACTLY 5 questions for EACH level A2, B1, B2, C1 (20 total). Mix grammar, vocabulary and usage. Keep each q under 18 words. Vary topics.';
+  const out=await llm(sys,[{role:'user',content:'Generate the placement test now.'}]);
+  const o=parseObj(out);if(!o||!Array.isArray(o.questions))return null;
+  const pool={A2:[],B1:[],B2:[],C1:[]};
+  o.questions.forEach((q,i)=>{if(q&&q.q&&Array.isArray(q.choices)&&q.choices.length>=2&&T_CEFR.includes(q.level)&&typeof q.answer==='number'&&q.answer>=0&&q.answer<q.choices.length){q._id='q'+i;pool[q.level].push(q);}});
+  if(pool.A2.length+pool.B1.length+pool.B2.length+pool.C1.length<8)return null;
+  return pool;
+}
+function pickQuestion(){for(const idx of [test.cur,test.cur-1,test.cur+1,test.cur-2,test.cur+2]){if(idx<0||idx>3)continue;const q=(test.pool[T_CEFR[idx]]||[]).find(x=>!test.used.has(x._id));if(q)return q;}return null;}
+function nextQuestion(){
+  const q=pickQuestion();
+  if(!q||test.n>=test.total)return finishTest();
+  test.used.add(q._id);test.current=q;
+  $('testProg').style.width=Math.round(test.n/test.total*100)+'%';$('testCount').textContent=(test.n+1)+' / '+test.total;
+  $('testBody').innerHTML=`<div class="q-num">${q.level} ・ ${T_TYPE[q.type]||'語法'}</div><div class="q-text">${esc(q.q)}</div><div class="q-choices">${q.choices.map((c,i)=>`<button class="q-choice" onclick="answerTest(${i})">${esc(c)}</button>`).join('')}</div>`;
+  $('testBody').scrollTop=0;
+}
+function answerTest(i){
+  if(!test||!test.current)return;const q=test.current;const correct=(i===q.answer);
+  test.answers.push({level:q.level,type:T_TYPE[q.type]?q.type:'usage',skill_ja:q.skill_ja||'',correct});
+  test.cur=correct?Math.min(3,test.cur+1):Math.max(0,test.cur-1);
+  test.n++;nextQuestion();
+}
+async function finishTest(){
+  $('testProg').style.width='100%';$('testCount').textContent='';
+  $('testBody').innerHTML='<div class="test-load"><span class="mini-spin"></span><div>結果を分析しています…</div></div>';
+  const res=computeResult();let fb=null;try{fb=await genFeedback(res);}catch(e){}
+  renderResults(res,fb);
+}
+function computeResult(){
+  const A=test.answers,total=A.length,correct=A.filter(a=>a.correct).length,pct=Math.round(correct/total*100);
+  const byLevel={};T_CEFR.forEach(l=>byLevel[l]={c:0,t:0});
+  A.forEach(a=>{byLevel[a.level].t++;if(a.correct)byLevel[a.level].c++;});
+  let estIdx=0;for(let idx=3;idx>=0;idx--){const b=byLevel[T_CEFR[idx]];if(b.t>=2&&b.c/b.t>=0.5){estIdx=idx;break;}}
+  const byType={grammar:{c:0,t:0},vocab:{c:0,t:0},usage:{c:0,t:0}};
+  A.forEach(a=>{const k=byType[a.type]?a.type:'usage';byType[k].t++;if(a.correct)byType[k].c++;});
+  const missed=A.filter(a=>!a.correct).map(a=>({level:a.level,type:a.type,skill_ja:a.skill_ja}));
+  return {pct,correct,total,cefr:T_CEFR[estIdx],byType,missed};
+}
+async function genFeedback(res){
+  const sys='You are an English coach summarizing a CEFR placement quiz for a Japanese learner. Respond ONLY with one minified JSON object, no markdown: {"summary_ja":"<2-3 sentence encouraging Japanese summary that justifies the estimated level>","weak_ja":["<specific weak point in Japanese>","..."],"advice_ja":"<1-2 sentence concrete study advice in Japanese>"}';
+  const out=await llm(sys,[{role:'user',content:`Estimated level: ${res.cefr}. Score ${res.pct}% (${res.correct}/${res.total}). Missed items: ${JSON.stringify(res.missed).slice(0,600)}`}]);
+  return parseObj(out);
+}
+function defaultWeaks(res){const out=[];[['grammar','文法'],['vocab','語彙'],['usage','語法']].forEach(([k,l])=>{const b=res.byType[k];if(b.t&&b.c/b.t<0.6)out.push(l+'の正確さ');});return out;}
+function renderResults(res,fb){
+  const skillHtml=[['grammar','文法'],['vocab','語彙'],['usage','語法']].map(([k,l])=>{const b=res.byType[k];const p=b.t?Math.round(b.c/b.t*100):0;return `<div class="skill-row"><div class="sh"><span>${l}</span><span class="p">${b.t?p+'%':'—'}</span></div><div class="skill-bar"><i style="width:${p}%"></i></div></div>`;}).join('');
+  const weaks=(fb&&Array.isArray(fb.weak_ja)&&fb.weak_ja.length)?fb.weak_ja:defaultWeaks(res);
+  const weakHtml=weaks.length?weaks.map(w=>`<div class="weak-item">${esc(w)}</div>`).join(''):'<div class="weak-item">大きな弱点は見られませんでした。いい調子！</div>';
+  $('testBody').innerHTML=`
+    <div class="res-badge"><div class="lv">${res.cefr}</div><div class="lb">${T_LABEL[res.cefr]||''}</div></div>
+    <div class="res-score">正答率 <b>${res.pct}%</b>（${res.correct}/${res.total}）</div>
+    ${fb&&fb.summary_ja?`<p style="font-size:14px;color:var(--ink-2);line-height:1.7;margin:0 0 20px;text-align:center">${esc(fb.summary_ja)}</p>`:''}
+    <div class="section-title">スキル別の正答率</div>${skillHtml}
+    <div class="weak-box"><h4>🎯 苦手ポイント</h4>${weakHtml}${fb&&fb.advice_ja?`<div style="font-size:13px;color:var(--ink-2);margin-top:11px;line-height:1.6;padding-top:10px;border-top:1px dashed var(--line)">💡 ${esc(fb.advice_ja)}</div>`:''}</div>
+    <button class="btn btn-primary full" style="margin-top:20px" onclick="applyTestLevel('${res.cefr}')">この結果をレベルに設定（${res.cefr}）</button>
+    <button class="btn full" style="margin-top:10px;background:var(--surface);box-shadow:var(--shadow)" onclick="startTest()">もう一度テスト</button>
+    <button class="btn full" style="margin-top:8px;color:var(--ink-3)" onclick="closeTest()">閉じる</button>`;
+  $('testBody').scrollTop=0;
+}
+function applyTestLevel(cefr){setLevel(cefr);closeTest();toast('レベルを '+cefr+' に設定した');}
 
 /* TALK */
 function renderModeGrid(){$('modeGrid').innerHTML=SCENARIOS.map(s=>{const feat=s.free||s.handsfree;return `<button class="mode-card${feat?' feat':''}${s.free?' free':''}${s.handsfree?' hf':''}" onclick="startMode('${s.id}')"><div class="ic">${s.icon}</div><div><div class="mt">${s.title}</div><div class="md">${s.desc}</div></div>${feat?'<span class="arr"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>':''}</button>`;}).join('');}
