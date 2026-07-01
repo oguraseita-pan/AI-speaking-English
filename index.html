@@ -38,21 +38,22 @@ html[data-theme="sprout"]{
 :root{--radius:18px;--tabbar-h:62px;--safe-b:env(safe-area-inset-bottom,0px);--safe-t:env(safe-area-inset-top,0px);
   --font-ui:'Inter','Noto Sans JP',-apple-system,BlinkMacSystemFont,sans-serif;--font-en:'Lora',Georgia,serif;--maxw:480px;}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;padding:0}
+html,body{margin:0;padding:0;height:100%}
 body{font-family:var(--font-ui);background:var(--paper);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;overscroll-behavior-y:none}
 button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
 input{font-family:inherit}
 
-#app{max-width:var(--maxw);margin:0 auto;position:relative;min-height:100dvh;background:var(--paper)}
-.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:9px;padding:max(10px,var(--safe-t)) 18px 12px;background:var(--topbar-bg);backdrop-filter:saturate(160%) blur(14px);border-bottom:1px solid var(--line-2)}
+#app{max-width:var(--maxw);margin:0 auto;height:100%;height:100dvh;display:flex;flex-direction:column;overflow:hidden;background:var(--paper)}
+.topbar{flex:0 0 auto;z-index:20;display:flex;align-items:center;gap:9px;padding:max(10px,var(--safe-t)) 18px 12px;background:var(--topbar-bg);backdrop-filter:saturate(160%) blur(14px);-webkit-backdrop-filter:saturate(160%) blur(14px);border-bottom:1px solid var(--line-2)}
 .brand{display:flex;align-items:center;gap:9px;font-family:var(--font-en);font-weight:600;font-size:19px;letter-spacing:-.01em}
 .brand .sub{font-family:var(--font-ui);font-weight:500;color:var(--ink-3);font-size:12.5px}
 .leaf{width:26px;height:26px;flex:0 0 auto}.topbar .spacer{flex:1}
 .lvchip{font-size:12px;font-weight:700;color:var(--green-ink);background:var(--green-soft);padding:6px 12px;border-radius:999px}
 
-.view{display:block;padding:16px 18px calc(var(--tabbar-h) + var(--safe-b) + 26px)}
+.main{flex:1;min-height:0;position:relative;overflow:hidden}
+.view{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 18px 28px}
 .view.hidden{display:none}
-.tabbar{position:fixed;bottom:0;left:0;right:0;width:100%;max-width:var(--maxw);margin:0 auto;height:calc(var(--tabbar-h) + var(--safe-b));padding-bottom:var(--safe-b);background:var(--bar-bg);backdrop-filter:saturate(160%) blur(16px);border-top:1px solid var(--line);display:flex;z-index:40}
+.tabbar{flex:0 0 auto;height:calc(var(--tabbar-h) + var(--safe-b));padding-bottom:var(--safe-b);background:var(--bar-bg);backdrop-filter:saturate(160%) blur(16px);-webkit-backdrop-filter:saturate(160%) blur(16px);border-top:1px solid var(--line);display:flex;z-index:20}
 .tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--ink-3);font-size:11px;font-weight:600}
 .tabbar button.active{color:var(--green)}.tabbar svg{width:23px;height:23px}
 
@@ -86,6 +87,13 @@ input{font-family:inherit}
 
 /* TALK mode picker */
 .mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.custom-box{background:var(--surface);box-shadow:var(--shadow);border-radius:16px;padding:14px}
+.cb-label{font-size:13px;font-weight:700;margin-bottom:10px}
+.cb-row{display:flex;align-items:center;gap:9px;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:4px 4px 4px 14px}
+.cb-row input{flex:1;border:none;outline:none;background:none;font-size:14px;padding:9px 0;min-width:0;color:var(--ink)}
+.cb-row input::placeholder{color:var(--ink-3)}
+.cb-go{width:38px;height:38px;border-radius:10px;background:var(--green);color:var(--on-green);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.cb-go:active{transform:scale(.94)}
 .mode-card{background:var(--surface);box-shadow:var(--shadow);border-radius:var(--radius);padding:15px 14px;text-align:left;transition:transform .12s;display:flex;flex-direction:column;gap:9px;min-height:106px}
 .mode-card:active{transform:scale(.975)}
 .mode-card .ic{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:21px;background:var(--green-soft)}
@@ -98,7 +106,7 @@ input{font-family:inherit}
 .mode-card.hf .ic{background:rgba(255,255,255,.2)}.mode-card.hf .mt{color:#fff}.mode-card.hf .md{color:#E3EEFB}
 
 /* CHAT (fixed overlay between top and the fixed tabbar -> no bottom gap) */
-#chatView{position:fixed;top:0;left:0;right:0;bottom:calc(var(--tabbar-h) + var(--safe-b));max-width:var(--maxw);margin:0 auto;display:flex;flex-direction:column;background:var(--paper);z-index:30}
+#chatView{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--paper);z-index:30}
 #chatView.hidden{display:none}
 .chat-head{flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:max(10px,var(--safe-t)) 16px 11px;border-bottom:1px solid var(--line-2);background:var(--paper)}
 .chat-head .ic-btn{width:34px;height:34px;border-radius:10px;background:var(--surface);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;color:var(--ink-2)}
@@ -242,6 +250,7 @@ input[type=range]{flex:1;accent-color:var(--green)}
     <button class="lvchip" id="levelChip" onclick="setTab('settings')">B1</button>
   </div>
 
+  <div class="main">
   <!-- HOME -->
   <div class="view" id="screen-home"><div id="homeInner"></div></div>
 
@@ -250,6 +259,14 @@ input[type=range]{flex:1;accent-color:var(--green)}
     <div id="modePicker">
       <div class="h1">場面を選ぶ</div>
       <p class="sub">役になりきって会話の練習ができるよ。</p>
+      <div class="custom-box">
+        <div class="cb-label">✨ 自由に場面・トピックを作る</div>
+        <div class="cb-row">
+          <input id="customIn" placeholder="例：空港で荷物が見つからない／面接の練習" autocomplete="off" onkeydown="if(event.key==='Enter')startCustom()">
+          <button class="cb-go" onclick="startCustom()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        </div>
+      </div>
+      <div class="section-title" style="margin-top:20px">シーン一覧</div>
       <div class="mode-grid" id="modeGrid"></div>
     </div>
   </div>
@@ -298,15 +315,12 @@ input[type=range]{flex:1;accent-color:var(--green)}
       <div class="set-row"><div class="info"><div class="t">日本語訳を最初から表示</div><div class="d">返答の下に訳を出す</div></div><button class="toggle" id="tgJa" onclick="toggleJaDefault()"></button></div>
     </div>
     <div class="set-group">
-      <div class="set-row"><div class="info"><div class="t">声の品質</div><div class="d">高品質＝自然なクラウド音声（Groq・無料枠）。iPhoneの設定不要でiOS/Android共通</div></div><div class="seg2" id="qualitySeg"></div></div>
-      <div class="set-row" style="display:block" id="voiceListWrap"><div class="info" style="margin-bottom:11px"><div class="t">読み上げの声（標準）</div><div class="d">▶︎で試聴。iPhoneのSafariでは追加DLした高品質音声は選べません（端末標準のみ）</div></div><div class="tone-list" id="voiceList"></div></div>
-      <div class="set-row" style="display:none" id="groqListWrap"><div class="info" style="margin-bottom:11px"><div class="t">読み上げの声（高品質・Groq）</div><div class="d">▶︎で試聴して好みの声を選んでね</div></div><div class="tone-list" id="groqList"></div></div>
+      <div class="set-row"><div class="info"><div class="t">声の品質</div><div class="d">高品質＝自然なクラウド音声（Groq・無料枠）。iPhoneの設定不要でiOS/Android共通。標準＝端末の無料音声</div></div><div class="seg2" id="qualitySeg"></div></div>
+      <div class="set-row" style="display:none" id="groqListWrap"><div class="info" style="margin-bottom:11px"><div class="t">読み上げの声</div><div class="d">▶︎で試聴して好みの声を選んでね</div></div><div class="tone-list" id="groqList"></div></div>
     </div>
     <div class="note-box"><b>ハンズフリー</b>は会話タブの「🎧 ハンズフリー」から。話し終わると自動で続き、終了時にミス・言い換えをまとめてレビューします。Webの仕様上<b>画面オン前提</b>（画面オフ/バックグラウンドは不可）。</div>
   </div>
-
-  <div class="sheet-bg" id="sheetBg" onclick="closeSheet()"></div>
-  <div class="sheet" id="sheet"><div class="grip"></div><div id="sheetBody"></div></div>
+  </div><!-- /main -->
 
   <div class="tabbar">
     <button id="tab-home" class="active" onclick="setTab('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>ホーム</button>
@@ -314,6 +328,9 @@ input[type=range]{flex:1;accent-color:var(--green)}
     <button id="tab-cards" onclick="setTab('cards')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h11l5 5v11a0 0 0 010 0H4z"/><path d="M15 4v5h5"/><path d="M8 13h8M8 17h6"/></svg>ノート</button>
     <button id="tab-settings" onclick="setTab('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>設定</button>
   </div>
+
+  <div class="sheet-bg" id="sheetBg" onclick="closeSheet()"></div>
+  <div class="sheet" id="sheet"><div class="grip"></div><div id="sheetBody"></div></div>
 </div>
 <div id="toast"></div>
 
@@ -335,6 +352,14 @@ const SCENARIOS=[
  {id:'smalltalk',icon:'🙌',title:'自己紹介',desc:'初対面のスモールトーク',ctx:'meeting someone new at a casual event; make friendly small talk'},
  {id:'business',icon:'💼',title:'ビジネス',desc:'会議・電話のやり取り',ctx:'a workplace meeting / business call between colleagues'},
  {id:'shopping',icon:'🛍️',title:'買い物',desc:'店員とのやり取り',ctx:'a clothing store where you are the shop assistant'},
+ {id:'interview',icon:'🧑‍💼',title:'面接',desc:'英語の就職・入学面接',ctx:'a job/school interview where you are the interviewer asking the learner questions'},
+ {id:'doctor',icon:'🏥',title:'病院・薬局',desc:'症状を伝える',ctx:'a clinic/pharmacy where you are the doctor or pharmacist and the learner describes symptoms'},
+ {id:'phone',icon:'📞',title:'電話',desc:'予約・問い合わせ',ctx:'a phone call where the learner makes a booking or inquiry and you are the staff'},
+ {id:'taxi',icon:'🚕',title:'タクシー',desc:'行き先を伝える',ctx:'a taxi ride where you are the driver'},
+ {id:'trip',icon:'🧳',title:'旅行の計画',desc:'旅の相談・計画',ctx:'planning a trip together; chat about destinations, plans and tips'},
+ {id:'movie',icon:'🎬',title:'映画・ドラマ',desc:'感想を語り合う',ctx:'a casual chat about movies and TV shows you both enjoy, sharing opinions'},
+ {id:'news',icon:'🗞️',title:'ニュース雑談',desc:'話題について話す',ctx:'a light discussion about a recent general-interest topic or trend'},
+ {id:'friend',icon:'🍻',title:'友達と雑談',desc:'週末や近況の話',ctx:'catching up with a close friend about your week, weekend and life'},
 ];
 const TONES=[
  {k:'friendly',t:'フレンドリー',d:'親しみやすくカジュアル（標準）',p:'Friendly and casual. Use warm everyday words like "Oh nice!", "Cool", "That sounds fun".'},
@@ -373,7 +398,7 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1900);}
 
-function setTab(tab){state.tab=tab;['home','talk','cards','settings'].forEach(t=>{$('screen-'+t).classList.toggle('hidden',t!==tab);$('tab-'+t).classList.toggle('active',t===tab);});if(tab!=='talk'&&state.mode){/* keep chat overlay only on talk */}if(tab==='home')renderHome();if(tab==='cards')renderCards();if(tab==='settings'){syncSettingsUI();updateModePill();}window.scrollTo(0,0);}
+function setTab(tab){state.tab=tab;['home','talk','cards','settings'].forEach(t=>{$('screen-'+t).classList.toggle('hidden',t!==tab);$('tab-'+t).classList.toggle('active',t===tab);});$('chatView').classList.toggle('hidden',!(tab==='talk'&&state.mode));if(tab==='home')renderHome();if(tab==='cards')renderCards();if(tab==='settings'){syncSettingsUI();updateModePill();}}
 
 /* HOME */
 function greet(){const h=new Date().getHours();if(h<5)return'こんばんは';if(h<11)return'おはよう';if(h<18)return'こんにちは';return'こんばんは';}
@@ -402,6 +427,7 @@ function resumeChat(){setTab('talk');$('screen-talk').classList.remove('hidden')
 /* TALK */
 function renderModeGrid(){$('modeGrid').innerHTML=SCENARIOS.map(s=>{const feat=s.free||s.handsfree;return `<button class="mode-card${feat?' feat':''}${s.free?' free':''}${s.handsfree?' hf':''}" onclick="startMode('${s.id}')"><div class="ic">${s.icon}</div><div><div class="mt">${s.title}</div><div class="md">${s.desc}</div></div>${feat?'<span class="arr"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>':''}</button>`;}).join('');}
 function startMode(id){const s=SCENARIOS.find(x=>x.id===id);beginConversation(s,(s.free||s.handsfree)?'(Greet the learner warmly in one short line and invite them to talk about anything.)':'(Greet the learner warmly in one short line and naturally begin the role-play.)');}
+function startCustom(){const v=($('customIn').value||'').trim();if(!v){$('customIn').focus();return;}const mode={id:'custom',icon:'✨',title:v.length>14?v.slice(0,14)+'…':v,ctx:`the specific situation or topic the learner wants to practice: "${v}". Take on whatever role best fits it and stay in character.`};beginConversation(mode,'(Set up this situation in one short friendly line and naturally begin, playing the most fitting role.)');$('customIn').value='';}
 function beginConversation(modeObj,opener){
   unlockAudio();
   state.mode=modeObj;state.opener=opener;state.history=[];state.handsfree=!!modeObj.handsfree;clearSel();
@@ -623,7 +649,7 @@ function buildSilenceSeg(){const opts=[[900,'短め'],[1300,'標準'],[2000,'長
 function setSilence(ms){state.silenceMs=ms;buildSilenceSeg();toast('無音の待ち時間：'+(ms/1000)+'秒');}
 function buildQualitySeg(){$('qualitySeg').innerHTML=[['browser','標準'],['groq','高品質']].map(([k,l])=>`<button class="${state.ttsMode===k?'on':''}" onclick="setTtsMode('${k}')">${l}</button>`).join('');}
 function setTtsMode(k){if(k==='groq'&&MODE!=='backend'){toast('高品質はデプロイ版でのみ使えます');return;}state.ttsMode=k;buildQualitySeg();updateVoicePanels();toast(k==='groq'?'高品質（Groq）に':'標準に');}
-function updateVoicePanels(){const g=state.ttsMode==='groq';$('voiceListWrap').style.display=g?'none':'block';$('groqListWrap').style.display=g?'block':'none';}
+function updateVoicePanels(){$('groqListWrap').style.display=state.ttsMode==='groq'?'block':'none';}
 const CHK='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
 const PLAY='<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
 function buildGroqList(){const el=$('groqList');if(!el)return;el.innerHTML=GROQ_VOICES.map(([v,l])=>`<div class="tone-opt${state.groqVoice===v?' on':''}"><button style="flex:1;text-align:left;background:none;padding:0" onclick="setGroqVoice('${v}')"><div class="tn">${l}</div><div class="td">${v.replace('-PlayAI','')}</div></button><button class="v-play" onclick="previewGroqVoice('${v}')" aria-label="試聴">${PLAY}</button><div class="tc">${state.groqVoice===v?CHK:''}</div></div>`).join('');}
@@ -633,7 +659,7 @@ function setTone(k){state.tone=k;buildToneList();const t=TONES.find(x=>x.k===k);
 function toggleVoice(){state.voiceOn=!state.voiceOn;if(!state.voiceOn)stopSpeaking();syncSettingsUI();$('voiceToggle').classList.toggle('on',state.voiceOn);}
 function setRate(v){state.rate=parseFloat(v);$('rateLabel').textContent=RATE_TXT(v);}
 function toggleJaDefault(){state.jaDefault=!state.jaDefault;syncSettingsUI();}
-function syncSettingsUI(){$('tgVoice').classList.toggle('on',state.voiceOn);$('voiceToggle').classList.toggle('on',state.voiceOn);$('tgJa').classList.toggle('on',state.jaDefault);$('rateRange').value=state.rate;$('rateLabel').textContent=RATE_TXT(state.rate);buildLevelSeg();buildToneList();buildThemeSeg();buildEndSeg();buildSilenceSeg();buildQualitySeg();buildVoiceList();buildGroqList();updateVoicePanels();}
+function syncSettingsUI(){$('tgVoice').classList.toggle('on',state.voiceOn);$('voiceToggle').classList.toggle('on',state.voiceOn);$('tgJa').classList.toggle('on',state.jaDefault);$('rateRange').value=state.rate;$('rateLabel').textContent=RATE_TXT(state.rate);buildLevelSeg();buildToneList();buildThemeSeg();buildEndSeg();buildSilenceSeg();buildQualitySeg();buildGroqList();updateVoicePanels();}
 function updateModePill(){const p=$('modePill'),t=$('modeText');if(!p)return;const live=MODE==='backend';p.classList.toggle('live',live);t.textContent=live?'デプロイ済み（Groq無料枠）':'プレビュー（ブラウザ音声）';}
 
 /* INIT */
