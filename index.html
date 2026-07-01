@@ -265,6 +265,15 @@ input[type=range]{flex:1;accent-color:var(--green)}
 .weak-box h4{margin:0 0 10px;font-size:13.5px;font-weight:700}
 .weak-item{display:flex;gap:8px;font-size:13.5px;color:var(--ink-2);margin-bottom:7px;line-height:1.55}
 .weak-item::before{content:"•";color:var(--green);font-weight:700}
+.rec-wrap{display:flex;flex-direction:column;align-items:center;gap:16px;margin-top:10px}
+.rec-btn{width:96px;height:96px;border-radius:50%;background:var(--green);color:var(--on-green);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,.18);transition:transform .12s}
+.rec-btn:active{transform:scale(.94)}
+.rec-btn.on{background:#E5484D;color:#fff;animation:recpulse 1.3s ease-in-out infinite}
+@keyframes recpulse{0%,100%{box-shadow:0 0 0 0 rgba(229,72,77,.45)}50%{box-shadow:0 0 0 15px rgba(229,72,77,0)}}
+.rec-timer{font-size:13px;color:var(--ink-2);font-weight:600;text-align:center}
+.sp-line{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:13.5px;color:var(--ink-2);padding:8px 0;border-bottom:1px solid var(--line)}
+.sp-line:last-of-type{border-bottom:none}
+.sp-line b{color:var(--ink);text-align:right;font-weight:600}
 #toast{position:fixed;left:50%;bottom:calc(var(--tabbar-h) + var(--safe-b) + 16px);transform:translateX(-50%) translateY(20px);z-index:60;background:var(--ink);color:var(--paper);font-size:13px;font-weight:600;padding:11px 18px;border-radius:13px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-width:88%;text-align:center;box-shadow:var(--shadow-lg)}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .hidden{display:none!important}
@@ -451,6 +460,7 @@ function renderHome(){
     <div class="home-stats"><div class="hstat"><div class="n">${total}</div><div class="l">ノートの総数</div></div><div class="hstat"><div class="n">${todayN}</div><div class="l">今日 追加</div></div></div>
     <div class="hero"><span class="tag">☀️ 今日の質問</span><div class="q">${esc(q.q)}</div><div class="qja">${esc(q.ja)}</div><div class="hero-btns"><button class="btn go" onclick="startDaily()">この質問で話す <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button><button class="btn alt" onclick="pickAnotherQ()" aria-label="別の質問"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg></button></div></div>
     <button class="resume" onclick="startTest()"><div class="ri">🎯</div><div><div class="rt">英語レベルテスト</div><div class="rd">1〜2分でCEFR判定・苦手を分析</div></div><span class="arr"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></span></button>
+    <button class="resume" onclick="startSpeaking()"><div class="ri">🎤</div><div><div class="rt">スピーキングテスト</div><div class="rd">30秒話してAIが話す力を判定</div></div><span class="arr"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></span></button>
     ${resume}
     <div class="section-title">サッと始める</div>
     <div class="chips">
@@ -469,37 +479,101 @@ const T_CEFR=['A2','B1','B2','C1'];
 const T_LABEL={A2:'初級',B1:'中級',B2:'中上級',C1:'上級'};
 const T_TYPE={grammar:'文法',vocab:'語彙',usage:'語法'};
 let test=null;
-function closeTest(){$('testView').classList.remove('show');test=null;}
-async function startTest(){
-  $('testView').classList.add('show');$('testProg').style.width='0%';$('testCount').textContent='';
-  $('testBody').innerHTML='<div class="test-load"><span class="mini-spin"></span><div>テストを準備しています…<br><span style="font-size:12px;color:var(--ink-3)">難易度別の問題を作成中</span></div></div>';
-  let pool=null;try{pool=await genTestPool();}catch(e){}
-  if(!pool){$('testBody').innerHTML='<div class="test-load"><div>準備に失敗しました。</div><button class="btn btn-primary" onclick="startTest()">再試行</button><button class="btn" style="color:var(--ink-3)" onclick="closeTest()">閉じる</button></div>';return;}
-  test={pool,used:new Set(),cur:1,n:0,total:12,answers:[],current:null};
-  nextQuestion();
-}
-async function genTestPool(){
-  const sys='You are an English placement-test generator. Create CEFR-graded multiple-choice questions testing grammar, vocabulary and usage, each with EXACTLY one correct answer, unambiguous, with 4 short choices. Respond ONLY with one minified JSON object, no markdown: {"questions":[{"level":"A2","type":"grammar","q":"She ___ to school every day.","choices":["go","goes","going","gone"],"answer":1,"skill_ja":"三人称単数の-s"}]}. Provide EXACTLY 5 questions for EACH level A2, B1, B2, C1 (20 total). Mix grammar, vocabulary and usage. Keep each q under 18 words. Vary topics.';
-  const out=await llm(sys,[{role:'user',content:'Generate the placement test now.'}]);
-  const o=parseObj(out);if(!o||!Array.isArray(o.questions))return null;
-  const pool={A2:[],B1:[],B2:[],C1:[]};
-  o.questions.forEach((q,i)=>{if(q&&q.q&&Array.isArray(q.choices)&&q.choices.length>=2&&T_CEFR.includes(q.level)&&typeof q.answer==='number'&&q.answer>=0&&q.answer<q.choices.length){q._id='q'+i;pool[q.level].push(q);}});
-  if(pool.A2.length+pool.B1.length+pool.B2.length+pool.C1.length<8)return null;
-  return pool;
-}
-function pickQuestion(){for(const idx of [test.cur,test.cur-1,test.cur+1,test.cur-2,test.cur+2]){if(idx<0||idx>3)continue;const q=(test.pool[T_CEFR[idx]]||[]).find(x=>!test.used.has(x._id));if(q)return q;}return null;}
+function closeTest(){$('testView').classList.remove('show');test=null;if(sp){try{clearInterval(sp.timer);}catch(e){}try{if(sp.rec&&sp.recording)sp.rec.stop();}catch(e){}try{if(sp.stream)sp.stream.getTracks().forEach(t=>t.stop());}catch(e){}sp=null;}}
+const STATIC_BANK=[
+ {level:"A2",type:"grammar",q:"She ___ to school every day.",choices:["go","goes","going","gone"],answer:1,skill_ja:"三人称単数の -s"},
+ {level:"A2",type:"grammar",q:"There ___ two books on the desk.",choices:["is","are","am","be"],answer:1,skill_ja:"be動詞の数の一致"},
+ {level:"A2",type:"grammar",q:"I ___ TV last night.",choices:["watch","watches","watched","watching"],answer:2,skill_ja:"規則動詞の過去形"},
+ {level:"A2",type:"grammar",q:"___ you like tea?",choices:["Do","Does","Is","Are"],answer:0,skill_ja:"一般動詞の疑問文"},
+ {level:"A2",type:"vocab",q:"I'm thirsty. I want something to ___.",choices:["eat","drink","read","walk"],answer:1,skill_ja:"基本動詞の語彙"},
+ {level:"A2",type:"usage",q:"It's cold. Please ___ the window.",choices:["open","close","wash","cook"],answer:1,skill_ja:"文脈に合う動詞"},
+ {level:"B1",type:"grammar",q:"If it rains tomorrow, we ___ stay home.",choices:["will","would","are","did"],answer:0,skill_ja:"第一条件文 (will)"},
+ {level:"B1",type:"grammar",q:"I have ___ finished my homework.",choices:["yet","ago","already","since"],answer:2,skill_ja:"現在完了の副詞"},
+ {level:"B1",type:"grammar",q:"This book is more interesting ___ that one.",choices:["then","than","as","that"],answer:1,skill_ja:"比較級 than"},
+ {level:"B1",type:"usage",q:"Could you ___ me a favor?",choices:["do","make","take","give"],answer:0,skill_ja:"コロケーション do a favor"},
+ {level:"B1",type:"vocab",q:"She's very ___; she always tells the truth.",choices:["honest","lazy","rude","shy"],answer:0,skill_ja:"形容詞の意味"},
+ {level:"B1",type:"grammar",q:"He's used to ___ up early.",choices:["get","gets","getting","got"],answer:2,skill_ja:"be used to + -ing"},
+ {level:"B2",type:"grammar",q:"By the time we arrived, the film ___.",choices:["started","has started","had started","starts"],answer:2,skill_ja:"過去完了"},
+ {level:"B2",type:"grammar",q:"She denied ___ the money.",choices:["to take","taking","take","taken"],answer:1,skill_ja:"動名詞を取る動詞"},
+ {level:"B2",type:"usage",q:"I'd rather you ___ smoke in here.",choices:["don't","didn't","not","won't"],answer:1,skill_ja:"would rather + 過去形"},
+ {level:"B2",type:"grammar",q:"___ harder, he would have passed.",choices:["If he studied","Had he studied","He had studied","If he study"],answer:1,skill_ja:"仮定法の倒置"},
+ {level:"B2",type:"vocab",q:"The evidence was ___; no one could deny it.",choices:["compelling","dull","vague","minor"],answer:0,skill_ja:"上級語彙 (compelling)"},
+ {level:"B2",type:"usage",q:"You should ___ advantage of this chance.",choices:["take","make","do","get"],answer:0,skill_ja:"コロケーション take advantage"},
+ {level:"C1",type:"usage",q:"No sooner ___ than it started to rain.",choices:["we left","had we left","we had left","did we leave"],answer:1,skill_ja:"no sooner の倒置"},
+ {level:"C1",type:"grammar",q:"It's high time we ___ this problem.",choices:["address","addressed","will address","addressing"],answer:1,skill_ja:"it's time + 過去形"},
+ {level:"C1",type:"grammar",q:"Rarely ___ such dedication.",choices:["I have seen","have I seen","I saw","did I saw"],answer:1,skill_ja:"否定副詞の倒置"},
+ {level:"C1",type:"vocab",q:"His argument was ___, full of holes.",choices:["tenuous","robust","sound","cogent"],answer:0,skill_ja:"上級語彙 (tenuous=弱い)"},
+ {level:"C1",type:"usage",q:"Take what he says with a ___ of salt.",choices:["grain","piece","drop","bit"],answer:0,skill_ja:"イディオム"},
+ {level:"C1",type:"vocab",q:"Her reply only served to ___ the confusion.",choices:["compound","resolve","reduce","clarify"],answer:0,skill_ja:"上級語彙 (compound=悪化させる)"},
+ {level:"A2",type:"grammar",q:"They ___ playing in the park now.",choices:["is","am","are","be"],answer:2,skill_ja:"現在進行形の be動詞"},
+ {level:"A2",type:"grammar",q:"Yesterday she ___ very tired.",choices:["is","was","were","are"],answer:1,skill_ja:"be動詞の過去 (was)"},
+ {level:"A2",type:"vocab",q:"We have breakfast in the ___.",choices:["morning","night","week","year"],answer:0,skill_ja:"時間帯の語彙"},
+ {level:"A2",type:"grammar",q:"I don't have ___ money today.",choices:["some","any","a","the"],answer:1,skill_ja:"否定文の any"},
+ {level:"A2",type:"usage",q:"Can I ___ your pen for a minute?",choices:["borrow","lend","sell","teach"],answer:0,skill_ja:"borrow と lend"},
+ {level:"B1",type:"grammar",q:"I've lived here ___ 2015.",choices:["for","since","from","at"],answer:1,skill_ja:"since / for"},
+ {level:"B1",type:"grammar",q:"The letter ___ by Tom last week.",choices:["wrote","was written","written","writes"],answer:1,skill_ja:"受動態 (過去)"},
+ {level:"B1",type:"usage",q:"I'm looking forward ___ you again.",choices:["to see","to seeing","seeing","see"],answer:1,skill_ja:"look forward to + -ing"},
+ {level:"B1",type:"vocab",q:"She ___ an important decision.",choices:["made","did","took","got"],answer:0,skill_ja:"make a decision"},
+ {level:"B1",type:"grammar",q:"You ___ to wear a seatbelt in a car.",choices:["have","must","should","ought"],answer:0,skill_ja:"have to"},
+ {level:"B2",type:"grammar",q:"I wish I ___ more free time.",choices:["have","had","has","having"],answer:1,skill_ja:"仮定法 wish + 過去"},
+ {level:"B2",type:"grammar",q:"It's essential that he ___ present at the meeting.",choices:["is","be","was","being"],answer:1,skill_ja:"仮定法現在 (should省略)"},
+ {level:"B2",type:"usage",q:"She is responsible ___ the whole project.",choices:["of","for","to","with"],answer:1,skill_ja:"前置詞 responsible for"},
+ {level:"B2",type:"grammar",q:"Not only ___ late, but he also forgot the keys.",choices:["he was","was he","he is","is he"],answer:1,skill_ja:"倒置 (not only)"},
+ {level:"B2",type:"vocab",q:"The directions were ___ and easy to follow.",choices:["clear","vague","obscure","murky"],answer:0,skill_ja:"語彙 (clear)"},
+ {level:"C1",type:"grammar",q:"Had I known, I ___ have come earlier.",choices:["will","would","can","may"],answer:1,skill_ja:"仮定法過去完了"},
+ {level:"C1",type:"usage",q:"Under no circumstances ___ leave your post.",choices:["you should","should you","you will","will you"],answer:1,skill_ja:"否定副詞句の倒置"},
+ {level:"C1",type:"grammar",q:"The plan, ___ was rejected, has been revised.",choices:["that","which","who","what"],answer:1,skill_ja:"非制限用法の which"},
+ {level:"C1",type:"vocab",q:"The report was ___ researched and detailed.",choices:["meticulously","barely","scarcely","hardly"],answer:0,skill_ja:"副詞 (meticulously)"},
+ {level:"C1",type:"vocab",q:"His answers were ___, avoiding the real issue.",choices:["evasive","candid","frank","direct"],answer:0,skill_ja:"上級語彙 (evasive)"},
+ {level:"A2",type:"grammar",q:"He ___ like vegetables.",choices:["doesn't","don't","isn't","aren't"],answer:0,skill_ja:"三単現の否定"},
+ {level:"A2",type:"grammar",q:"___ is your favorite color?",choices:["What","Who","When","Where"],answer:0,skill_ja:"疑問詞 what"},
+ {level:"A2",type:"vocab",q:"I go to bed ___ 11 p.m.",choices:["at","in","on","to"],answer:0,skill_ja:"時刻の前置詞 at"},
+ {level:"A2",type:"grammar",q:"We ___ to the beach last summer.",choices:["go","went","gone","going"],answer:1,skill_ja:"不規則動詞の過去 (went)"},
+ {level:"A2",type:"vocab",q:"My sister is a ___. She works in a hospital.",choices:["nurse","teacher","driver","cook"],answer:0,skill_ja:"職業の語彙"},
+ {level:"A2",type:"grammar",q:"There isn't ___ milk in the fridge.",choices:["some","any","many","a"],answer:1,skill_ja:"不可算名詞の any"},
+ {level:"A2",type:"usage",q:"Turn ___ the lights when you leave.",choices:["off","on","in","up"],answer:0,skill_ja:"句動詞 turn off"},
+ {level:"B1",type:"grammar",q:"I've never ___ to Australia.",choices:["be","been","being","was"],answer:1,skill_ja:"現在完了 (been)"},
+ {level:"B1",type:"grammar",q:"If I ___ you, I would apologize.",choices:["am","was","were","be"],answer:2,skill_ja:"仮定法過去 (were)"},
+ {level:"B1",type:"vocab",q:"Could you ___ the music down? It's too loud.",choices:["turn","put","take","get"],answer:0,skill_ja:"句動詞 turn down"},
+ {level:"B1",type:"grammar",q:"She's the person ___ helped me.",choices:["which","who","whom","what"],answer:1,skill_ja:"関係代名詞 who"},
+ {level:"B1",type:"usage",q:"I'm not very good ___ math.",choices:["at","in","on","with"],answer:0,skill_ja:"前置詞 good at"},
+ {level:"B1",type:"grammar",q:"They've been friends ___ ten years.",choices:["since","for","from","during"],answer:1,skill_ja:"for と since"},
+ {level:"B1",type:"vocab",q:"The weather was terrible, ___ we stayed inside.",choices:["so","because","but","although"],answer:0,skill_ja:"接続詞 so"},
+ {level:"B2",type:"grammar",q:"I'd rather stay home than ___ out tonight.",choices:["go","to go","going","went"],answer:0,skill_ja:"would rather than + 原形"},
+ {level:"B2",type:"grammar",q:"By next year, I ___ here for a decade.",choices:["will work","will have worked","work","worked"],answer:1,skill_ja:"未来完了"},
+ {level:"B2",type:"vocab",q:"The company decided to ___ the new product.",choices:["launch","lunch","latch","lounge"],answer:0,skill_ja:"語彙 (launch)"},
+ {level:"B2",type:"usage",q:"He apologized ___ being late.",choices:["for","of","to","from"],answer:0,skill_ja:"apologize for"},
+ {level:"B2",type:"grammar",q:"The more you practice, ___ you become.",choices:["the better","better","the best","more better"],answer:0,skill_ja:"the 比較級, the 比較級"},
+ {level:"B2",type:"grammar",q:"It was such ___ interesting film.",choices:["a","an","the","some"],answer:1,skill_ja:"冠詞 (an + 母音)"},
+ {level:"B2",type:"vocab",q:"Despite ___ hard, she didn't pass.",choices:["studying","study","studied","to study"],answer:0,skill_ja:"despite + 動名詞"},
+ {level:"C1",type:"grammar",q:"Seldom ___ such a talented musician.",choices:["I have met","have I met","I met","did I met"],answer:1,skill_ja:"否定副詞の倒置 (seldom)"},
+ {level:"C1",type:"grammar",q:"If only I ___ listened to your advice!",choices:["have","had","would","did"],answer:1,skill_ja:"if only + 過去完了"},
+ {level:"C1",type:"vocab",q:"Her argument was both cogent and ___.",choices:["persuasive","weak","vague","dull"],answer:0,skill_ja:"上級語彙 (persuasive)"},
+ {level:"C1",type:"usage",q:"The decision is ___ with our long-term strategy.",choices:["consistent","consist","consisting","consisted"],answer:0,skill_ja:"consistent with"},
+ {level:"C1",type:"grammar",q:"Little ___ that he was being watched.",choices:["he knew","did he know","he did know","knew he"],answer:1,skill_ja:"倒置 (little did)"},
+ {level:"C1",type:"usage",q:"The two accounts were at ___ with each other.",choices:["odds","ends","peace","war"],answer:0,skill_ja:"イディオム at odds"},
+ {level:"C1",type:"usage",q:"She has an excellent ___ of the subject.",choices:["command","order","control","hold"],answer:0,skill_ja:"コロケーション a command of"}
+];
+function buildPool(){const pool={A2:[],B1:[],B2:[],C1:[]};const b=STATIC_BANK.map((q,i)=>Object.assign({_id:"q"+i},q));T_CEFR.forEach(l=>{const arr=b.filter(q=>q.level===l);for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=arr[i];arr[i]=arr[j];arr[j]=t;}pool[l]=arr;});return pool;}
+function startTest(){$('testView').classList.add('show');$('testProg').style.width='0%';$('testCount').textContent='';const phase1=['B1','B2','A2','C1','B2','A2','C1','B1'];test={pool:buildPool(),used:new Set(),n:0,total:20,phase1:phase1.length,schedule:phase1.slice(),answers:[],current:null,provisional:null};nextQuestion();}
+function pickQuestionForLevel(lv){const base=T_CEFR.indexOf(lv);for(const idx of [base,base-1,base+1,base-2,base+2]){if(idx<0||idx>3)continue;const q=(test.pool[T_CEFR[idx]]||[]).find(x=>!test.used.has(x._id));if(q)return q;}return null;}
+function provisionalIdx(){const A=test.answers;const byL={0:{c:0,t:0},1:{c:0,t:0},2:{c:0,t:0},3:{c:0,t:0}};A.forEach(a=>{const i=T_CEFR.indexOf(a.level);byL[i].t++;if(a.correct)byL[i].c++;});let p=0;for(let i=0;i<=3;i++){if(byL[i].t&&byL[i].c>=1){if(i===0||byL[i-1].c>=1)p=i;else break;}else if(byL[i].t)break;}return p;}
+function buildPhase2(p){const list=[],add=(idx,k)=>{for(let i=0;i<k;i++)if(idx>=0&&idx<=3)list.push(T_CEFR[idx]);};if(p<=0){add(0,7);add(1,5);}else if(p>=3){add(3,7);add(2,5);}else{add(p,6);add(p-1,3);add(p+1,3);}for(let i=list.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)),t=list[i];list[i]=list[j];list[j]=t;}return list;}
 function nextQuestion(){
-  const q=pickQuestion();
-  if(!q||test.n>=test.total)return finishTest();
+  if(test.n>=test.total)return finishTest();
+  if(test.n===test.phase1&&test.schedule.length<=test.phase1){test.provisional=provisionalIdx();test.schedule=test.schedule.concat(buildPhase2(test.provisional));}
+  const lv=test.schedule[test.n]||T_CEFR[test.provisional!=null?test.provisional:1];
+  const q=pickQuestionForLevel(lv);
+  if(!q)return finishTest();
   test.used.add(q._id);test.current=q;
   $('testProg').style.width=Math.round(test.n/test.total*100)+'%';$('testCount').textContent=(test.n+1)+' / '+test.total;
-  $('testBody').innerHTML=`<div class="q-num">${q.level} ・ ${T_TYPE[q.type]||'語法'}</div><div class="q-text">${esc(q.q)}</div><div class="q-choices">${q.choices.map((c,i)=>`<button class="q-choice" onclick="answerTest(${i})">${esc(c)}</button>`).join('')}</div>`;
+  const stage=test.n<test.phase1?'基礎診断':'精密測定';
+  $('testBody').innerHTML=`<div class="q-num">${stage} ・ ${T_TYPE[q.type]||'語法'}</div><div class="q-text">${esc(q.q)}</div><div class="q-choices">${q.choices.map((c,i)=>`<button class="q-choice" onclick="answerTest(${i})">${esc(c)}</button>`).join('')}</div>`;
   $('testBody').scrollTop=0;
 }
 function answerTest(i){
   if(!test||!test.current)return;const q=test.current;const correct=(i===q.answer);
   test.answers.push({level:q.level,type:T_TYPE[q.type]?q.type:'usage',skill_ja:q.skill_ja||'',correct});
-  test.cur=correct?Math.min(3,test.cur+1):Math.max(0,test.cur-1);
   test.n++;nextQuestion();
 }
 async function finishTest(){
@@ -512,11 +586,15 @@ function computeResult(){
   const A=test.answers,total=A.length,correct=A.filter(a=>a.correct).length,pct=Math.round(correct/total*100);
   const byLevel={};T_CEFR.forEach(l=>byLevel[l]={c:0,t:0});
   A.forEach(a=>{byLevel[a.level].t++;if(a.correct)byLevel[a.level].c++;});
-  let estIdx=0;for(let idx=3;idx>=0;idx--){const b=byLevel[T_CEFR[idx]];if(b.t>=2&&b.c/b.t>=0.5){estIdx=idx;break;}}
+  // best-fitting CEFR threshold: level T predicts "correct iff item level <= T". Pick T maximizing agreement.
+  const Lof=a=>T_CEFR.indexOf(a.level);
+  const scores=[0,1,2,3].map(T=>A.reduce((s,a)=>s+(((Lof(a)<=T)===a.correct)?1:0),0));
+  let estIdx=0,bestS=-1;scores.forEach((s,T)=>{if(s>bestS){bestS=s;estIdx=T;}});
+  let plus=false;if(estIdx<3){const b=byLevel[T_CEFR[estIdx+1]];if(b.t>=1){const r=b.c/b.t;if(r>=0.4&&r<0.7)plus=true;}}
   const byType={grammar:{c:0,t:0},vocab:{c:0,t:0},usage:{c:0,t:0}};
   A.forEach(a=>{const k=byType[a.type]?a.type:'usage';byType[k].t++;if(a.correct)byType[k].c++;});
   const missed=A.filter(a=>!a.correct).map(a=>({level:a.level,type:a.type,skill_ja:a.skill_ja}));
-  return {pct,correct,total,cefr:T_CEFR[estIdx],byType,missed};
+  return {pct,correct,total,cefr:T_CEFR[estIdx],plus,nextLevel:estIdx<3?T_CEFR[estIdx+1]:null,byType,byLevel,missed};
 }
 async function genFeedback(res){
   const sys='You are an English coach summarizing a CEFR placement quiz for a Japanese learner. Respond ONLY with one minified JSON object, no markdown: {"summary_ja":"<2-3 sentence encouraging Japanese summary that justifies the estimated level>","weak_ja":["<specific weak point in Japanese>","..."],"advice_ja":"<1-2 sentence concrete study advice in Japanese>"}';
@@ -529,17 +607,81 @@ function renderResults(res,fb){
   const weaks=(fb&&Array.isArray(fb.weak_ja)&&fb.weak_ja.length)?fb.weak_ja:defaultWeaks(res);
   const weakHtml=weaks.length?weaks.map(w=>`<div class="weak-item">${esc(w)}</div>`).join(''):'<div class="weak-item">大きな弱点は見られませんでした。いい調子！</div>';
   $('testBody').innerHTML=`
-    <div class="res-badge"><div class="lv">${res.cefr}</div><div class="lb">${T_LABEL[res.cefr]||''}</div></div>
-    <div class="res-score">正答率 <b>${res.pct}%</b>（${res.correct}/${res.total}）</div>
+    <div class="res-badge"><div class="lv">${res.cefr}${res.plus?'⁺':''}</div><div class="lb">${T_LABEL[res.cefr]||''}</div></div>
+    <div class="res-score">正答率 <b>${res.pct}%</b>（${res.correct}/${res.total}）${res.plus?`　<span style="color:var(--green-ink)">${res.nextLevel}が射程内</span>`:''}</div>
     ${fb&&fb.summary_ja?`<p style="font-size:14px;color:var(--ink-2);line-height:1.7;margin:0 0 20px;text-align:center">${esc(fb.summary_ja)}</p>`:''}
     <div class="section-title">スキル別の正答率</div>${skillHtml}
     <div class="weak-box"><h4>🎯 苦手ポイント</h4>${weakHtml}${fb&&fb.advice_ja?`<div style="font-size:13px;color:var(--ink-2);margin-top:11px;line-height:1.6;padding-top:10px;border-top:1px dashed var(--line)">💡 ${esc(fb.advice_ja)}</div>`:''}</div>
     <button class="btn btn-primary full" style="margin-top:20px" onclick="applyTestLevel('${res.cefr}')">この結果をレベルに設定（${res.cefr}）</button>
-    <button class="btn full" style="margin-top:10px;background:var(--surface);box-shadow:var(--shadow)" onclick="startTest()">もう一度テスト</button>
-    <button class="btn full" style="margin-top:8px;color:var(--ink-3)" onclick="closeTest()">閉じる</button>`;
+    <button class="btn full" style="margin-top:10px;background:var(--surface);box-shadow:var(--shadow)" onclick="startSpeaking()">🎤 スピーキングも測る（＋1分）</button>
+    <button class="btn full" style="margin-top:8px;color:var(--ink-3)" onclick="startTest()">もう一度テスト</button>
+    <button class="btn full" style="margin-top:6px;color:var(--ink-3)" onclick="closeTest()">閉じる</button>`;
   $('testBody').scrollTop=0;
 }
 function applyTestLevel(cefr){setLevel(cefr);closeTest();toast('レベルを '+cefr+' に設定した');}
+
+/* ===== SPEAKING TEST (record -> Whisper -> AI CEFR scoring) ===== */
+const SPEAK_PROMPTS=[
+ "Tell me about your typical day. What do you usually do from morning to night?",
+ "Describe a place you would like to visit, and explain why you want to go there.",
+ "What do you like to do in your free time, and why do you enjoy it?",
+ "Talk about a memorable trip or experience you had recently.",
+ "Do you prefer living in a city or in the countryside? Explain your reasons."
+];
+let sp=null;
+function startSpeaking(){
+  $('testView').classList.add('show');$('testProg').style.width='0%';$('testCount').textContent='';
+  if(MODE!=='backend'){$('testBody').innerHTML='<div class="test-load"><div>🎤 スピーキングテストは本番（デプロイ版）でのみ利用できます。</div><button class="btn" style="color:var(--ink-3)" onclick="closeTest()">閉じる</button></div>';return;}
+  sp={prompt:SPEAK_PROMPTS[Math.floor(Math.random()*SPEAK_PROMPTS.length)],rec:null,chunks:[],stream:null,startT:0,seconds:0,timer:null,recording:false};
+  renderSpeakIntro();
+}
+function renderSpeakIntro(){
+  $('testBody').innerHTML=`
+    <div class="q-num">🎤 スピーキングテスト</div>
+    <div class="q-text" style="font-size:19px">${esc(sp.prompt)}</div>
+    <p style="font-size:13px;color:var(--ink-2);line-height:1.7;margin:0 0 22px">この質問に英語で<b>30〜45秒</b>ほど答えてね。マイクを押して話し、もう一度押すと終了。<br><span style="color:var(--ink-3)">※発音は評価対象外。文法・語彙・流暢さ・内容から判定します。</span></p>
+    <div class="rec-wrap">
+      <button id="spMic" class="rec-btn" onclick="toggleSpeakRec()"><svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M12 15a3 3 0 003-3V6a3 3 0 00-6 0v6a3 3 0 003 3z"/><path d="M19 11a1 1 0 00-2 0 5 5 0 01-10 0 1 1 0 00-2 0 7 7 0 006 6.92V21a1 1 0 002 0v-3.08A7 7 0 0019 11z"/></svg></button>
+      <div class="rec-timer" id="spTimer">タップして開始</div>
+    </div>
+    <button class="btn full" style="margin-top:26px;color:var(--ink-3)" onclick="closeTest()">閉じる</button>`;
+}
+async function toggleSpeakRec(){
+  if(!sp)return;
+  if(sp.recording){sp.recording=false;clearInterval(sp.timer);try{sp.rec.stop();}catch(e){}const b=$('spMic');if(b)b.classList.remove('on');return;}
+  try{sp.stream=await navigator.mediaDevices.getUserMedia({audio:true});}catch(e){toast('マイクの許可が必要です');return;}
+  sp.chunks=[];const mt=MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':'';sp.rec=mt?new MediaRecorder(sp.stream,{mimeType:mt}):new MediaRecorder(sp.stream);
+  sp.rec.ondataavailable=e=>{if(e.data.size>0)sp.chunks.push(e.data);};
+  sp.rec.onstop=async()=>{try{sp.stream.getTracks().forEach(t=>t.stop());}catch(e){}const blob=new Blob(sp.chunks,{type:sp.rec.mimeType||'audio/mp4'});const secs=sp.seconds;if(secs<4){renderSpeakIntro();toast('短すぎます。もう少し話してね');return;}await evalSpeaking(blob,secs);};
+  sp.rec.start();sp.recording=true;sp.startT=Date.now();sp.seconds=0;
+  $('spMic').classList.add('on');$('spTimer').textContent='● 録音中  0:00';
+  sp.timer=setInterval(()=>{sp.seconds=Math.round((Date.now()-sp.startT)/1000);const m=Math.floor(sp.seconds/60),s=sp.seconds%60;$('spTimer').textContent='● 録音中  '+m+':'+String(s).padStart(2,'0')+(sp.seconds>=15?'　もう一度タップで終了':'');if(sp.seconds>=90)toggleSpeakRec();},250);
+}
+async function evalSpeaking(blob,secs){
+  $('testProg').style.width='100%';$('testBody').innerHTML='<div class="test-load"><span class="mini-spin"></span><div>音声を分析しています…</div></div>';
+  let transcript='';
+  try{const b64=await blobToB64(blob);const r=await fetch('/api/transcribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({audio:b64,mime:blob.type})});const j=await r.json();transcript=(j.text||'').trim();}catch(e){}
+  if(!transcript||transcript.split(/\s+/).length<4){$('testBody').innerHTML='<div class="test-load"><div>うまく聞き取れませんでした。静かな場所でもう一度お試しください。</div><button class="btn btn-primary" onclick="startSpeaking()">もう一度</button><button class="btn" style="color:var(--ink-3)" onclick="closeTest()">閉じる</button></div>';return;}
+  const words=transcript.split(/\s+/).length,wpm=Math.round(words/(secs/60));
+  const sys='You are a CEFR speaking examiner for a Japanese learner. You receive the prompt, a Whisper transcript of the learner speaking (may contain minor STT errors — ignore spelling/punctuation and do NOT assess pronunciation), the duration in seconds and words-per-minute. Assess spoken PRODUCTION: grammatical range & accuracy, vocabulary range, coherence & fluency, and task fulfilment. Respond ONLY with one minified JSON object, no markdown: {"cefr":"A2|B1|B2|C1","score":0,"fluency_ja":"<短い日本語>","grammar_ja":"<短い日本語>","vocab_ja":"<短い日本語>","summary_ja":"<2-3文の日本語>","advice_ja":"<1-2文の日本語>"} where score is an integer 0-100.';
+  let fb=null;try{const out=await llm(sys,[{role:'user',content:`Prompt: ${sp.prompt}\nDuration: ${secs}s, ${wpm} wpm, ${words} words.\nTranscript: ${transcript.slice(0,900)}`}]);fb=parseObj(out);}catch(e){}
+  renderSpeakResult(fb,transcript,wpm,secs);
+}
+function renderSpeakResult(fb,transcript,wpm,secs){
+  const cefr=(fb&&T_CEFR.includes(fb.cefr))?fb.cefr:'B1';
+  const score=(fb&&typeof fb.score==='number')?Math.max(0,Math.min(100,Math.round(fb.score))):null;
+  const line=(icon,label,txt)=>txt?`<div class="sp-line"><span>${icon} ${label}</span><b>${esc(txt)}</b></div>`:'';
+  $('testBody').innerHTML=`
+    <div class="res-badge"><div class="lv">${cefr}</div><div class="lb">スピーキング</div></div>
+    <div class="res-score">${score!=null?`総合スコア <b>${score}</b>/100　`:''}<span style="color:var(--ink-3)">${wpm} wpm・${secs}秒</span></div>
+    ${fb&&fb.summary_ja?`<p style="font-size:14px;color:var(--ink-2);line-height:1.7;margin:0 0 18px;text-align:center">${esc(fb.summary_ja)}</p>`:''}
+    <div class="weak-box">${line('🗣️','流暢さ',fb&&fb.fluency_ja)}${line('📐','文法',fb&&fb.grammar_ja)}${line('📚','語彙',fb&&fb.vocab_ja)}${fb&&fb.advice_ja?`<div style="font-size:13px;color:var(--ink-2);margin-top:11px;line-height:1.6;padding-top:10px;border-top:1px dashed var(--line)">💡 ${esc(fb.advice_ja)}</div>`:''}</div>
+    <details style="margin-top:14px"><summary style="font-size:12.5px;color:var(--ink-3);cursor:pointer">認識された発話を見る</summary><p style="font-size:13.5px;color:var(--ink-2);line-height:1.6;margin:8px 0 0;font-family:var(--font-en)">${esc(transcript)}</p></details>
+    <button class="btn btn-primary full" style="margin-top:20px" onclick="applyTestLevel('${cefr}')">この結果をレベルに設定（${cefr}）</button>
+    <button class="btn full" style="margin-top:10px;background:var(--surface);box-shadow:var(--shadow)" onclick="startSpeaking()">もう一度</button>
+    <button class="btn full" style="margin-top:8px;color:var(--ink-3)" onclick="closeTest()">閉じる</button>`;
+  $('testBody').scrollTop=0;
+}
 
 /* TALK */
 function renderModeGrid(){$('modeGrid').innerHTML=SCENARIOS.map(s=>{const feat=s.free||s.handsfree;return `<button class="mode-card${feat?' feat':''}${s.free?' free':''}${s.handsfree?' hf':''}" onclick="startMode('${s.id}')"><div class="ic">${s.icon}</div><div><div class="mt">${s.title}</div><div class="md">${s.desc}</div></div>${feat?'<span class="arr"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>':''}</button>`;}).join('');}
