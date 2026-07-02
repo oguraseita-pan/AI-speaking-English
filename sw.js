@@ -1,5 +1,5 @@
-// v3: 下タブの隙間修正・ログイン機能反映のための強制更新
-const C = "sprout-speaking-v3";
+// v4: 下タブ隙間の根本修正（起動時に誤った高さを固定しないよう変更）
+const C = "sprout-speaking-v4";
 const ASSETS = ["/icon-192.png", "/icon-512.png", "/apple-touch-icon.png", "/manifest.webmanifest"];
 self.addEventListener("install", e => {
   self.skipWaiting();

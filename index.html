@@ -951,25 +951,32 @@ function applySnapshot(o){if(!o)return;PERSIST_KEYS.forEach(k=>{if(o[k]!==undefi
 function saveLocal(){try{localStorage.setItem(LOCAL_KEY,JSON.stringify(snapshotState()));}catch(e){}}
 function loadLocal(){try{const raw=localStorage.getItem(LOCAL_KEY);if(raw)applySnapshot(JSON.parse(raw));}catch(e){}}
 function queueSync(){saveLocal();if(!session)return;clearTimeout(syncTimer);syncTimer=setTimeout(pushToCloud,1200);setSyncDot('busy');}
-function setSyncDot(kind){const d=$('syncDot');if(!d)return;d.classList.remove('ok','err');if(kind==='ok')d.classList.add('ok');if(kind==='err')d.classList.add('err');}
-async function pushToCloud(){if(!sb||!session)return;try{const{error}=await sb.from('speaking_state').upsert({user_id:session.user.id,data:snapshotState(),updated_at:new Date().toISOString()});setSyncDot(error?'err':'ok');}catch(e){setSyncDot('err');}}
-async function pullFromCloud(){if(!sb||!session)return;try{const{data,error}=await sb.from('speaking_state').select('data,updated_at').eq('user_id',session.user.id).maybeSingle();if(!error&&data&&data.data){const cloud=data.data;const localCards=state.cards||[];const cloudCards=cloud.cards||[];const key=c=>c.type+'|'+c.front.toLowerCase();const seen=new Set(cloudCards.map(key));const onlyLocal=localCards.filter(c=>!seen.has(key(c)));applySnapshot(cloud);state.cards=cloudCards.concat(onlyLocal);if(onlyLocal.length)queueSync();}}catch(e){}}
+let lastSyncErr=null;
+function setSyncDot(kind,msg){const d=$('syncDot');if(d){d.classList.remove('ok','err');if(kind==='ok')d.classList.add('ok');if(kind==='err')d.classList.add('err');}if(kind==='err'){lastSyncErr=msg||'不明なエラー';}else if(kind==='ok'){lastSyncErr=null;}const m=$('syncMsg');if(m)m.textContent=lastSyncErr?('⚠️ 同期エラー: '+lastSyncErr):'';}
+async function pushToCloud(){if(!sb||!session)return;try{const{error}=await sb.from('speaking_state').upsert({user_id:session.user.id,data:snapshotState(),updated_at:new Date().toISOString()});if(error){console.error('[sync push]',error);setSyncDot('err',error.message||error.code||JSON.stringify(error));}else setSyncDot('ok');}catch(e){console.error('[sync push]',e);setSyncDot('err',e&&e.message?e.message:String(e));}}
+async function pullFromCloud(){if(!sb||!session)return;try{const{data,error}=await sb.from('speaking_state').select('data,updated_at').eq('user_id',session.user.id).maybeSingle();if(error){console.error('[sync pull]',error);setSyncDot('err',error.message||error.code||JSON.stringify(error));return;}if(data&&data.data){const cloud=data.data;const localCards=state.cards||[];const cloudCards=cloud.cards||[];const key=c=>c.type+'|'+c.front.toLowerCase();const seen=new Set(cloudCards.map(key));const onlyLocal=localCards.filter(c=>!seen.has(key(c)));applySnapshot(cloud);state.cards=cloudCards.concat(onlyLocal);if(onlyLocal.length)queueSync();}}catch(e){console.error('[sync pull]',e);setSyncDot('err',e&&e.message?e.message:String(e));}}
 async function checkPlan(){userPlan='free';planSource=null;if(!sb||!session)return;try{const{data}=await sb.from('plan_status').select('speaking_plan,bundle').eq('user_id',session.user.id).maybeSingle();if(data){if(data.bundle){userPlan='pro';planSource='bundle';}else if(data.speaking_plan&&data.speaking_plan!=='free'){userPlan=data.speaking_plan;planSource='speaking';}}}catch(e){}}
 function isPro(){return userPlan&&userPlan!=='free';}
 
-/* ---- 画面高さの安定化（キーボード・ツールバー追従、下タブのズレ防止） ---- */
-(function(){const vv=window.visualViewport;if(!vv)return;const doc=document.documentElement;let raf=0;
-  const fit=()=>{raf=0;doc.style.setProperty('--vvh',vv.height+'px');doc.classList.toggle('kb',(window.innerHeight-vv.height)>90);if(window.scrollY)window.scrollTo(0,0);};
+/* ---- 画面高さの安定化（キーボード開閉時のみ介入。通常はOS標準の100dvhを信頼する） ---- */
+(function(){const vv=window.visualViewport;if(!vv)return;const doc=document.documentElement;let raf=0,maxH=vv.height;
+  const fit=()=>{raf=0;if(vv.height>maxH-1)maxH=vv.height;const shrink=maxH-vv.height;const kb=shrink>90;
+    doc.classList.toggle('kb',kb);
+    if(kb)doc.style.setProperty('--vvh',vv.height+'px');else doc.style.removeProperty('--vvh');
+    if(window.scrollY)window.scrollTo(0,0);};
   const req=()=>{if(!raf)raf=requestAnimationFrame(fit);};
-  vv.addEventListener('resize',req);vv.addEventListener('scroll',req);window.addEventListener('orientationchange',req);fit();})();
+  vv.addEventListener('resize',req);vv.addEventListener('scroll',req);
+  window.addEventListener('orientationchange',()=>{maxH=vv.height;req();});
+  fit();})();
 
 function loadSupabase(){return new Promise(res=>{if(window.supabase)return res(true);const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js';let done=false;const fin=ok=>{if(!done){done=true;res(ok);}};s.onload=()=>fin(true);s.onerror=()=>fin(false);setTimeout(()=>fin(false),5000);document.head.appendChild(s);});}
 function refreshAfterSync(){setTheme(state.theme);syncSettingsUI();$('levelChip').textContent=state.level;if(state.tab==='home')renderHome();if(state.tab==='cards')renderCards();renderAcctCard();}
 async function initAuth(){
-  await loadSupabase();
-  try{if(!sb&&window.supabase)sb=window.supabase.createClient(CLOUD.url,CLOUD.anonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'}});}catch(e){}
-  if(!sb){renderAcctCard();return;}
-  try{const{data}=await sb.auth.getSession();session=data&&data.session?data.session:null;}catch(e){session=null;}
+  const ok=await loadSupabase();
+  if(!ok)console.error('[auth] Supabase SDK failed to load (network/CDN blocked?)');
+  try{if(!sb&&window.supabase)sb=window.supabase.createClient(CLOUD.url,CLOUD.anonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'}});}catch(e){console.error('[auth] createClient failed',e);}
+  if(!sb){console.error('[auth] no Supabase client — sync disabled');renderAcctCard();return;}
+  try{const{data,error}=await sb.auth.getSession();if(error)console.error('[auth] getSession error',error);session=data&&data.session?data.session:null;}catch(e){console.error('[auth] getSession threw',e);session=null;}
   sb.auth.onAuthStateChange((_e,s)=>{session=s;checkPlan().then(renderAcctCard);});
   if(session){await pullFromCloud();await checkPlan();}
   else if(!localStorage.getItem('sp_skip_auth')){showAuth();}
@@ -998,12 +1005,14 @@ function jaAuthErr(m){if(/already registered|already exists/i.test(m))return'こ
 async function signOut(){if(sb)try{await sb.auth.signOut();}catch(e){}session=null;userPlan='free';renderAcctCard();toast('ログアウトした');}
 function renderAcctCard(){
   const el=$('acctCard');if(!el)return;
-  if(!sb){el.innerHTML='';return;}
+  if(!sb){el.innerHTML='<div class="weak-box" style="font-size:12.5px;color:#E5484D">⚠️ クラウド同期に接続できません（通信環境を確認するか、再読み込みしてください）</div>';return;}
   if(!session){el.innerHTML=`<button class="resume" onclick="showAuth()"><div class="ri">🔐</div><div><div class="rt">ログイン / 新規登録</div><div class="rd">Sproutと同じアカウントで記録を同期</div></div><span class="arr"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></span></button>`;return;}
   const email=session.user.email||'';const initial=email.charAt(0).toUpperCase()||'?';
   const planLabel=planSource==='bundle'?'セットプラン':(planSource==='speaking'?'Speaking単体プラン':'Sproutと共通アカウント');
-  el.innerHTML=`<div class="acc-row"><div class="acc-avatar">${initial}</div><div class="acc-info"><div class="acc-email">${esc(email)}</div><div class="acc-plan">${planLabel}</div></div><span class="plan-badge${isPro()?' pro':''}">${isPro()?'PRO':'Free'}</span><span class="sync-dot" id="syncDot"></span></div><button class="btn full" style="margin-top:10px;color:var(--ink-3);background:var(--surface);box-shadow:var(--shadow)" onclick="signOut()">ログアウト</button>`;
+  el.innerHTML=`<div class="acc-row"><div class="acc-avatar">${initial}</div><div class="acc-info"><div class="acc-email">${esc(email)}</div><div class="acc-plan">${planLabel}</div></div><span class="plan-badge${isPro()?' pro':''}">${isPro()?'PRO':'Free'}</span><span class="sync-dot" id="syncDot"></span></div><div id="syncMsg" style="font-size:12px;color:#E5484D;margin-top:6px"></div><button class="btn full" style="margin-top:10px;color:var(--ink-3);background:var(--surface);box-shadow:var(--shadow)" onclick="manualSync()">今すぐ同期</button><button class="btn full" style="margin-top:8px;color:var(--ink-3);background:var(--surface);box-shadow:var(--shadow)" onclick="signOut()">ログアウト</button>`;
+  setSyncDot(lastSyncErr?'err':null,lastSyncErr);
 }
+async function manualSync(){toast('同期中…');await pullFromCloud();await pushToCloud();toast(lastSyncErr?'同期に失敗した':'同期した');renderAcctCard();}
 loadLocal();
 setTheme(state.theme);renderModeGrid();syncSettingsUI();$('levelChip').textContent=state.level;setTab('home');
 initAuth();
