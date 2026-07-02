@@ -376,7 +376,7 @@ input[type=range]{flex:1;accent-color:var(--green)}
   <!-- SETTINGS -->
   <div class="view hidden" id="screen-settings">
     <div class="section-title">設定</div>
-    <div style="margin-bottom:16px"><span class="mode-pill" id="modePill"><span class="dot"></span><span id="modeText">確認中…</span></span></div>
+    <div style="margin-bottom:16px"><span class="mode-pill" id="modePill"><span class="dot"></span><span id="modeText">確認中…</span></span> <span style="font-size:10.5px;color:var(--ink-3);vertical-align:middle">build v5</span></div>
     <div id="acctCard" style="margin-bottom:16px"></div>
     <div class="set-group">
       <div class="set-row"><div class="info"><div class="t">レベル</div><div class="d">語彙と話す速さ（Sproutと同じCEFR）</div></div><div class="seg2" id="levelSeg"></div></div>
@@ -958,16 +958,14 @@ async function pullFromCloud(){if(!sb||!session)return;try{const{data,error}=awa
 async function checkPlan(){userPlan='free';planSource=null;if(!sb||!session)return;try{const{data}=await sb.from('plan_status').select('speaking_plan,bundle').eq('user_id',session.user.id).maybeSingle();if(data){if(data.bundle){userPlan='pro';planSource='bundle';}else if(data.speaking_plan&&data.speaking_plan!=='free'){userPlan=data.speaking_plan;planSource='speaking';}}}catch(e){}}
 function isPro(){return userPlan&&userPlan!=='free';}
 
-/* ---- 画面高さの安定化（キーボード開閉時のみ介入。通常はOS標準の100dvhを信頼する） ---- */
-(function(){const vv=window.visualViewport;if(!vv)return;const doc=document.documentElement;let raf=0,maxH=vv.height;
-  const fit=()=>{raf=0;if(vv.height>maxH-1)maxH=vv.height;const shrink=maxH-vv.height;const kb=shrink>90;
+/* ---- キーボード開閉のみ検知（フォーカス直後の競合を避けるためデバウンス、scrollは操作しない） ---- */
+(function(){const vv=window.visualViewport;if(!vv)return;const doc=document.documentElement;let t=0,maxH=vv.height;
+  const fit=()=>{t=0;if(vv.height>maxH-1)maxH=vv.height;const kb=(maxH-vv.height)>90;
     doc.classList.toggle('kb',kb);
-    if(kb)doc.style.setProperty('--vvh',vv.height+'px');else doc.style.removeProperty('--vvh');
-    if(window.scrollY)window.scrollTo(0,0);};
-  const req=()=>{if(!raf)raf=requestAnimationFrame(fit);};
-  vv.addEventListener('resize',req);vv.addEventListener('scroll',req);
-  window.addEventListener('orientationchange',()=>{maxH=vv.height;req();});
-  fit();})();
+    if(kb)doc.style.setProperty('--vvh',vv.height+'px');else doc.style.removeProperty('--vvh');};
+  const req=()=>{clearTimeout(t);t=setTimeout(fit,150);};
+  vv.addEventListener('resize',req);
+  window.addEventListener('orientationchange',()=>{maxH=vv.height;req();});})();
 
 function loadSupabase(){return new Promise(res=>{if(window.supabase)return res(true);const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js';let done=false;const fin=ok=>{if(!done){done=true;res(ok);}};s.onload=()=>fin(true);s.onerror=()=>fin(false);setTimeout(()=>fin(false),5000);document.head.appendChild(s);});}
 function refreshAfterSync(){setTheme(state.theme);syncSettingsUI();$('levelChip').textContent=state.level;if(state.tab==='home')renderHome();if(state.tab==='cards')renderCards();renderAcctCard();}
