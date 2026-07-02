@@ -38,7 +38,7 @@ html[data-theme="sprout"]{
 :root{--radius:18px;--tabbar-h:62px;--safe-b:env(safe-area-inset-bottom,0px);--safe-t:env(safe-area-inset-top,0px);
   --font-ui:'Inter','Noto Sans JP',-apple-system,BlinkMacSystemFont,sans-serif;--font-en:'Lora',Georgia,serif;--maxw:480px;}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;padding:0;height:100%}
+html,body{margin:0;padding:0;height:100%;background:var(--paper)}
 body{font-family:var(--font-ui);background:var(--paper);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;overscroll-behavior-y:none}
 button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
 input{font-family:inherit}
@@ -376,7 +376,7 @@ input[type=range]{flex:1;accent-color:var(--green)}
   <!-- SETTINGS -->
   <div class="view hidden" id="screen-settings">
     <div class="section-title">設定</div>
-    <div style="margin-bottom:16px"><span class="mode-pill" id="modePill"><span class="dot"></span><span id="modeText">確認中…</span></span> <span style="font-size:10.5px;color:var(--ink-3);vertical-align:middle">build v5</span></div>
+    <div style="margin-bottom:16px"><span class="mode-pill" id="modePill"><span class="dot"></span><span id="modeText">確認中…</span></span> <span style="font-size:10.5px;color:var(--ink-3);vertical-align:middle">build v6</span></div>
     <div id="acctCard" style="margin-bottom:16px"></div>
     <div class="set-group">
       <div class="set-row"><div class="info"><div class="t">レベル</div><div class="d">語彙と話す速さ（Sproutと同じCEFR）</div></div><div class="seg2" id="levelSeg"></div></div>

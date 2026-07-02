@@ -1,5 +1,5 @@
-// v5: キーボード競合の修正・バージョン表示追加
-const C = "sprout-speaking-v5";
+// v6: html背景色の明示指定（実機での端数ズレ対策）
+const C = "sprout-speaking-v6";
 const ASSETS = ["/icon-192.png", "/icon-512.png", "/apple-touch-icon.png", "/manifest.webmanifest"];
 self.addEventListener("install", e => {
   self.skipWaiting();
