@@ -6,6 +6,7 @@
 <title>Sprout Speaking</title>
 <meta name="theme-color" content="#0F1413" id="themeColor">
 <link rel="manifest" href="/manifest.webmanifest">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -274,6 +275,28 @@ input[type=range]{flex:1;accent-color:var(--green)}
 .sp-line{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:13.5px;color:var(--ink-2);padding:8px 0;border-bottom:1px solid var(--line)}
 .sp-line:last-of-type{border-bottom:none}
 .sp-line b{color:var(--ink);text-align:right;font-weight:600}
+#authView{display:none;position:fixed;inset:0;max-width:var(--maxw);margin:0 auto;background:var(--paper);z-index:80;flex-direction:column;padding:max(28px,var(--safe-t)) 24px 24px;overflow-y:auto}
+#authView.show{display:flex}
+.auth-logo{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.auth-title{font-size:22px;font-weight:700;margin:18px 0 6px}
+.auth-sub{font-size:13.5px;color:var(--ink-2);line-height:1.6;margin-bottom:26px}
+.auth-field{margin-bottom:12px}
+.auth-field label{display:block;font-size:12px;font-weight:700;color:var(--ink-2);margin-bottom:6px}
+.auth-field input{width:100%;box-sizing:border-box;border:1.5px solid var(--line);border-radius:12px;padding:13px 14px;font-size:15px;background:var(--surface);color:var(--ink);outline:none}
+.auth-field input:focus{border-color:var(--green)}
+.auth-err{font-size:12.5px;color:#E5484D;margin:2px 0 4px;min-height:1em}
+.auth-switch{text-align:center;font-size:13px;color:var(--ink-2);margin-top:18px}
+.auth-switch button{color:var(--green-ink);font-weight:700}
+.acc-row{display:flex;align-items:center;gap:12px;padding:14px;background:var(--surface);box-shadow:var(--shadow);border-radius:16px}
+.acc-avatar{width:42px;height:42px;border-radius:50%;background:var(--green);color:var(--on-green);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex:0 0 auto}
+.acc-info{flex:1;min-width:0}
+.acc-email{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acc-plan{font-size:11.5px;color:var(--ink-3);margin-top:2px}
+.plan-badge{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--surface-2);color:var(--ink-2)}
+.plan-badge.pro{background:var(--green);color:var(--on-green)}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--ink-3);flex:0 0 auto}
+.sync-dot.ok{background:var(--green)}
+.sync-dot.err{background:#E5484D}
 #toast{position:fixed;left:50%;bottom:calc(var(--tabbar-h) + var(--safe-b) + 16px);transform:translateX(-50%) translateY(20px);z-index:60;background:var(--ink);color:var(--paper);font-size:13px;font-weight:600;padding:11px 18px;border-radius:13px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-width:88%;text-align:center;box-shadow:var(--shadow-lg)}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .hidden{display:none!important}
@@ -282,10 +305,23 @@ input[type=range]{flex:1;accent-color:var(--green)}
 </head>
 <body>
 <div id="app">
+  <div id="authView">
+    <div class="auth-logo"><svg width="30" height="30" viewBox="0 0 32 32" fill="none"><path d="M16 28C16 28 16 18 16 14C16 8 22 4 28 4C28 12 24 18 16 18" fill="#78CD96"/><path d="M16 28C16 28 16 20 16 17C16 12 11 9 5 9C5 16 9 21 16 21" fill="#49A876"/><rect x="15" y="17" width="2" height="11" rx="1" fill="#2EA873"/></svg><div class="brand">Sprout <span class="sub">Speaking</span></div></div>
+    <div class="auth-title" id="authTitle">おかえりなさい</div>
+    <p class="auth-sub" id="authSub">Sproutと同じメールアドレスでログインすると、単語帳と会話の学習記録がつながります。</p>
+    <div class="auth-field"><label>メールアドレス</label><input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com"></div>
+    <div class="auth-field"><label>パスワード</label><input id="authPass" type="password" autocomplete="current-password" placeholder="6文字以上" onkeydown="if(event.key==='Enter')authSubmit()"></div>
+    <div class="auth-err" id="authErr"></div>
+    <button class="btn btn-primary full" id="authBtn" onclick="authSubmit()">ログイン</button>
+    <button class="btn full" style="margin-top:10px;background:var(--surface);box-shadow:var(--shadow)" onclick="skipAuth()">あとで（このまま端末内で使う）</button>
+    <div class="auth-switch" id="authSwitch">アカウントがない場合は <button onclick="toggleAuthMode()">新規登録</button></div>
+  </div>
+
   <div class="topbar">
     <svg class="leaf" viewBox="0 0 32 32" fill="none"><path d="M16 28C16 28 16 18 16 14C16 8 22 4 28 4C28 12 24 18 16 18" fill="#78CD96"/><path d="M16 28C16 28 16 20 16 17C16 12 11 9 5 9C5 16 9 21 16 21" fill="#49A876"/><rect x="15" y="17" width="2" height="11" rx="1" fill="#2EA873"/></svg>
     <div class="brand">Sprout <span class="sub">Speaking</span></div>
     <div class="spacer"></div>
+    <button class="lvchip" id="acctChip" onclick="setTab('settings')" style="padding:6px 10px" aria-label="アカウント"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></button>
     <button class="lvchip" id="levelChip" onclick="setTab('settings')">B1</button>
   </div>
 
@@ -341,6 +377,7 @@ input[type=range]{flex:1;accent-color:var(--green)}
   <div class="view hidden" id="screen-settings">
     <div class="section-title">設定</div>
     <div style="margin-bottom:16px"><span class="mode-pill" id="modePill"><span class="dot"></span><span id="modeText">確認中…</span></span></div>
+    <div id="acctCard" style="margin-bottom:16px"></div>
     <div class="set-group">
       <div class="set-row"><div class="info"><div class="t">レベル</div><div class="d">語彙と話す速さ（Sproutと同じCEFR）</div></div><div class="seg2" id="levelSeg"></div></div>
       <div class="set-row"><div class="info"><div class="t">テーマ</div><div class="d">見た目の色味</div></div><div class="seg2" id="themeSeg"></div></div>
@@ -739,7 +776,7 @@ function reLookup(t){if(!state.pending)return;openSheet(state.pending.front||sta
 function renderSheetResult(c){const ex=c.example_en?`<div class="ex"><span class="e2">${esc(c.example_en)}</span><br>${esc(c.example_ja||'')}</div>`:'';const note=c.note_ja?`<div class="note2">📝 ${esc(c.note_ja)}</div>`:'';$('sheetBody').innerHTML=`<div class="seg">${['word','idiom','sentence'].map(t=>`<button class="${t===c.type?'on':''}" onclick="reLookup('${t}')">${TYPE_LABEL[t]}</button>`).join('')}</div><div><span class="front">${esc(c.front)}</span>${c.pos?` <span class="pos-chip">${esc(c.pos)}</span>`:''}</div><div class="mean">${esc(c.meaning_ja)}</div>${ex}${note}<button class="save" id="saveBtn" onclick="saveCard()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>ノートに保存</button>`;}
 function closeSheet(){$('sheetBg').classList.remove('show');$('sheet').classList.remove('show');state.pending=null;}
 async function lookupCard(text,type){let sys;if(type==='sentence')sys='Explain this English sentence for a Japanese learner. Respond ONLY with one minified JSON object, no markdown: {"front":"<the sentence>","pos":"文","meaning_ja":"<natural Japanese translation>","note_ja":"<brief grammar or usage note in Japanese>","example_en":"","example_ja":""}';else if(type==='idiom')sys='Make a flashcard for this English idiom/phrase for a Japanese learner. Respond ONLY with one minified JSON object, no markdown: {"front":"<the phrase>","pos":"熟語","meaning_ja":"<concise Japanese meaning>","example_en":"<one short natural example>","example_ja":"<its Japanese translation>","note_ja":""}';else sys='Make a vocabulary flashcard for this English word for a Japanese learner. Respond ONLY with one minified JSON object, no markdown: {"front":"<base form>","pos":"<品詞 日本語 e.g. 名詞/動詞/形容詞/副詞>","meaning_ja":"<concise Japanese meaning>","example_en":"<one short natural example>","example_ja":"<its Japanese translation>","note_ja":""}';const out=await llm(sys,[{role:'user',content:'"'+text+'"'}]);const o=parseObj(out);if(!o)return null;return{type,front:o.front||text,pos:o.pos||'',meaning_ja:o.meaning_ja||'',example_en:o.example_en||'',example_ja:o.example_ja||'',note_ja:o.note_ja||''};}
-function addCard(c){if(state.cards.some(x=>x.front.toLowerCase()===c.front.toLowerCase()&&x.type===c.type))return false;state.cards.unshift(Object.assign({id:Date.now()+'_'+Math.random().toString(36).slice(2,6),created:Date.now(),srs:{level:0,next:Date.now()}},c));return true;}
+function addCard(c){if(state.cards.some(x=>x.front.toLowerCase()===c.front.toLowerCase()&&x.type===c.type))return false;state.cards.unshift(Object.assign({id:Date.now()+'_'+Math.random().toString(36).slice(2,6),created:Date.now(),srs:{level:0,next:Date.now()}},c));queueSync();return true;}
 function saveCard(){const c=state.pending;if(!c||!c.front)return;const ok=addCard(c);const b=$('saveBtn');if(b){b.classList.add('done');b.innerHTML=ok?'✓ 保存しました':'✓ 保存済み';}toast(ok?'ノートに追加した':'もう保存済み');setTimeout(()=>{closeSheet();clearSel();},550);}
 
 /* AI */
@@ -877,35 +914,90 @@ const FOLDERS=[{k:'word',icon:'🔤',t:'単語',d:'words'},{k:'idiom',icon:'🧩
 function renderCards(){const inner=$('cardsInner');if(!state.noteFolder){const counts={};FOLDERS.forEach(f=>counts[f.k]=state.cards.filter(c=>c.type===f.k).length);inner.innerHTML=`<div class="section-title">ノート</div><div class="note-folders">${FOLDERS.map(f=>`<button class="folder" onclick="openFolder('${f.k}')"><div class="fi">${f.icon}</div><div><div class="ft">${f.t}</div><div class="fd">${f.d}</div></div><div class="fc">${counts[f.k]}</div></button>`).join('')}</div>${state.cards.length?'':'<div class="empty"><div class="ei">🌱</div><h3>まだ何もないよ</h3><p>会話中にAIの英語をタップ →<br>調べてノートに保存しよう。</p></div>'}`;return;}const f=FOLDERS.find(x=>x.k===state.noteFolder);const list=state.cards.filter(c=>c.type===state.noteFolder);inner.innerHTML=`<div class="crumb"><button class="bk" onclick="openFolder(null)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><div class="ct"><span class="g">ノート ›</span> ${f.t}</div></div>${list.length?list.map(cardHtml).join(''):'<div class="empty"><div class="ei">'+f.icon+'</div><h3>'+f.t+'はまだ空</h3><p>会話中に保存するとここに入るよ。</p></div>'}`;}
 function cardHtml(c){const ex=c.example_en?`<div class="ex"><span class="e2">${esc(c.example_en)}</span><br>${esc(c.example_ja||'')}</div>`:'';const note=c.note_ja?`<div class="ex">📝 ${esc(c.note_ja)}</div>`:'';return `<div class="ncard"><button class="del" onclick="delCard('${c.id}')" aria-label="削除"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button><div><span class="w">${esc(c.front)}</span>${c.pos?`<span class="pos-chip" style="margin-left:7px;vertical-align:2px">${esc(c.pos)}</span>`:''}</div><div class="m">${esc(c.meaning_ja)}</div>${ex}${note}</div>`;}
 function openFolder(k){state.noteFolder=k;renderCards();}
-function delCard(id){state.cards=state.cards.filter(c=>c.id!==id);renderCards();}
+function delCard(id){state.cards=state.cards.filter(c=>c.id!==id);renderCards();queueSync();}
 
 /* SETTINGS */
 const LEVELS=['A2','B1','B2','C1'];
 function buildLevelSeg(){$('levelSeg').innerHTML=LEVELS.map(l=>`<button class="${l===state.level?'on':''}" onclick="setLevel('${l}')">${l}</button>`).join('');}
-function setLevel(l){state.level=l;$('levelChip').textContent=l;if(state.mode)$('chatLevel').textContent='Level '+l;buildLevelSeg();toast('レベルを '+l+' に');}
+function setLevel(l){state.level=l;$('levelChip').textContent=l;if(state.mode)$('chatLevel').textContent='Level '+l;buildLevelSeg();toast('レベルを '+l+' に');queueSync();}
 function buildThemeSeg(){$('themeSeg').innerHTML=[['dark','ダーク'],['sprout','Sprout']].map(([k,l])=>`<button class="${k===state.theme?'on':''}" onclick="setTheme('${k}')">${l}</button>`).join('');}
-function setTheme(k){state.theme=k;document.documentElement.setAttribute('data-theme',k);$('themeColor').setAttribute('content',k==='sprout'?'#F6F4EE':'#0F1413');buildThemeSeg();}
+function setTheme(k){state.theme=k;document.documentElement.setAttribute('data-theme',k);$('themeColor').setAttribute('content',k==='sprout'?'#F6F4EE':'#0F1413');buildThemeSeg();queueSync();}
 function buildEndSeg(){$('endSeg').innerHTML=[['tap','タップ'],['auto','自動']].map(([k,l])=>`<button class="${(state.autoEnd?'auto':'tap')===k?'on':''}" onclick="setEnd('${k}')">${l}</button>`).join('');}
-function setEnd(k){state.autoEnd=(k==='auto');buildEndSeg();toast(state.autoEnd?'無音で自動区切りに':'タップで区切りに');}
+function setEnd(k){state.autoEnd=(k==='auto');buildEndSeg();toast(state.autoEnd?'無音で自動区切りに':'タップで区切りに');queueSync();}
 function buildSilenceSeg(){const opts=[[900,'短め'],[1300,'標準'],[2000,'長め']];$('silenceSeg').innerHTML=opts.map(([ms,l])=>`<button class="${state.silenceMs===ms?'on':''}" onclick="setSilence(${ms})">${l}</button>`).join('');}
-function setSilence(ms){state.silenceMs=ms;buildSilenceSeg();toast('無音の待ち時間：'+(ms/1000)+'秒');}
+function setSilence(ms){state.silenceMs=ms;buildSilenceSeg();toast('無音の待ち時間：'+(ms/1000)+'秒');queueSync();}
 function buildQualitySeg(){$('qualitySeg').innerHTML=[['browser','標準'],['groq','高品質']].map(([k,l])=>`<button class="${state.ttsMode===k?'on':''}" onclick="setTtsMode('${k}')">${l}</button>`).join('');}
-function setTtsMode(k){if(k==='groq'&&MODE!=='backend'){toast('高品質はデプロイ版でのみ使えます');return;}state.ttsMode=k;buildQualitySeg();updateVoicePanels();toast(k==='groq'?'高品質（Groq）に':'標準に');}
+function setTtsMode(k){if(k==='groq'&&MODE!=='backend'){toast('高品質はデプロイ版でのみ使えます');return;}state.ttsMode=k;buildQualitySeg();updateVoicePanels();toast(k==='groq'?'高品質（Groq）に':'標準に');queueSync();}
 function updateVoicePanels(){$('groqListWrap').style.display=state.ttsMode==='groq'?'block':'none';}
 const CHK='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
 const PLAY='<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
 function buildGroqList(){const el=$('groqList');if(!el)return;el.innerHTML=GROQ_VOICES.map(([v,l])=>`<div class="tone-opt${state.groqVoice===v?' on':''}"><button style="flex:1;text-align:left;background:none;padding:0" onclick="setGroqVoice('${v}')"><div class="tn">${l}</div><div class="td">${v.replace('-PlayAI','')}</div></button><button class="v-play" onclick="previewGroqVoice('${v}')" aria-label="試聴">${PLAY}</button><div class="tc">${state.groqVoice===v?CHK:''}</div></div>`).join('');}
-function setGroqVoice(v){state.groqVoice=v;buildGroqList();previewGroqVoice(v);toast('声：'+v.replace('-PlayAI',''));}
+function setGroqVoice(v){state.groqVoice=v;buildGroqList();previewGroqVoice(v);toast('声：'+v.replace('-PlayAI',''));queueSync();}
 function buildToneList(){const el=$('toneList');if(!el)return;el.innerHTML=TONES.map(t=>`<button class="tone-opt${t.k===state.tone?' on':''}" onclick="setTone('${t.k}')"><div style="flex:1"><div class="tn">${t.t}</div><div class="td">${t.d}</div></div><div class="tc">${t.k===state.tone?'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>':''}</div></button>`).join('');}
-function setTone(k){state.tone=k;buildToneList();const t=TONES.find(x=>x.k===k);toast('口調：'+t.t+'（次の発話から）');}
-function toggleVoice(){state.voiceOn=!state.voiceOn;if(!state.voiceOn)stopSpeaking();syncSettingsUI();$('voiceToggle').classList.toggle('on',state.voiceOn);}
-function setRate(v){state.rate=parseFloat(v);$('rateLabel').textContent=RATE_TXT(v);}
-function toggleJaDefault(){state.jaDefault=!state.jaDefault;syncSettingsUI();}
+function setTone(k){state.tone=k;buildToneList();const t=TONES.find(x=>x.k===k);toast('口調：'+t.t+'（次の発話から）');queueSync();}
+function toggleVoice(){state.voiceOn=!state.voiceOn;if(!state.voiceOn)stopSpeaking();syncSettingsUI();$('voiceToggle').classList.toggle('on',state.voiceOn);queueSync();}
+function setRate(v){state.rate=parseFloat(v);$('rateLabel').textContent=RATE_TXT(v);queueSync();}
+function toggleJaDefault(){state.jaDefault=!state.jaDefault;syncSettingsUI();queueSync();}
 function syncSettingsUI(){$('tgVoice').classList.toggle('on',state.voiceOn);$('voiceToggle').classList.toggle('on',state.voiceOn);$('tgJa').classList.toggle('on',state.jaDefault);$('rateRange').value=state.rate;$('rateLabel').textContent=RATE_TXT(state.rate);buildLevelSeg();buildToneList();buildThemeSeg();buildEndSeg();buildSilenceSeg();buildQualitySeg();buildGroqList();updateVoicePanels();}
 function updateModePill(){const p=$('modePill'),t=$('modeText');if(!p)return;const live=MODE==='backend';p.classList.toggle('live',live);t.textContent=live?'デプロイ済み（Groq無料枠）':'プレビュー（ブラウザ音声）';}
 
-/* INIT */
-setTheme(state.theme);renderModeGrid();syncSettingsUI();$('levelChip').textContent=state.level;setTab('home');
+/* ===== Supabase Auth + Cloud Sync (shared with Sprout) ===== */
+const CLOUD={url:'https://lfjlrokehorsnfaytkgx.supabase.co',anonKey:'sb_publishable_jhQ8QRqM6QuCWlEjOPok9A_62zFa10k'};
+let sb=null,session=null,userPlan='free',planSource=null,authMode='login',syncTimer=null;
+try{if(window.supabase)sb=window.supabase.createClient(CLOUD.url,CLOUD.anonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'}});}catch(e){}
+const PERSIST_KEYS=['level','voiceOn','rate','jaDefault','tone','theme','autoEnd','homeQ','voiceName','ttsMode','groqVoice','silenceMs','cards','noteFolder'];
+const LOCAL_KEY='sproutSpeakingState';
+function snapshotState(){const o={};PERSIST_KEYS.forEach(k=>o[k]=state[k]);return o;}
+function applySnapshot(o){if(!o)return;PERSIST_KEYS.forEach(k=>{if(o[k]!==undefined)state[k]=o[k];});}
+function saveLocal(){try{localStorage.setItem(LOCAL_KEY,JSON.stringify(snapshotState()));}catch(e){}}
+function loadLocal(){try{const raw=localStorage.getItem(LOCAL_KEY);if(raw)applySnapshot(JSON.parse(raw));}catch(e){}}
+function queueSync(){saveLocal();if(!session)return;clearTimeout(syncTimer);syncTimer=setTimeout(pushToCloud,1200);setSyncDot('busy');}
+function setSyncDot(kind){const d=$('syncDot');if(!d)return;d.classList.remove('ok','err');if(kind==='ok')d.classList.add('ok');if(kind==='err')d.classList.add('err');}
+async function pushToCloud(){if(!sb||!session)return;try{const{error}=await sb.from('speaking_state').upsert({user_id:session.user.id,data:snapshotState(),updated_at:new Date().toISOString()});setSyncDot(error?'err':'ok');}catch(e){setSyncDot('err');}}
+async function pullFromCloud(){if(!sb||!session)return;try{const{data,error}=await sb.from('speaking_state').select('data,updated_at').eq('user_id',session.user.id).maybeSingle();if(!error&&data&&data.data){const cloud=data.data;const localCards=state.cards||[];const cloudCards=cloud.cards||[];const key=c=>c.type+'|'+c.front.toLowerCase();const seen=new Set(cloudCards.map(key));const onlyLocal=localCards.filter(c=>!seen.has(key(c)));applySnapshot(cloud);state.cards=cloudCards.concat(onlyLocal);if(onlyLocal.length)queueSync();}}catch(e){}}
+async function checkPlan(){userPlan='free';planSource=null;if(!sb||!session)return;try{const{data}=await sb.from('plan_status').select('speaking_plan,bundle').eq('user_id',session.user.id).maybeSingle();if(data){if(data.bundle){userPlan='pro';planSource='bundle';}else if(data.speaking_plan&&data.speaking_plan!=='free'){userPlan=data.speaking_plan;planSource='speaking';}}}catch(e){}}
+function isPro(){return userPlan&&userPlan!=='free';}
+
+async function initAuth(){
+  loadLocal();
+  if(!sb){renderAcctCard();return;}
+  try{const{data}=await sb.auth.getSession();session=data&&data.session?data.session:null;}catch(e){session=null;}
+  sb.auth.onAuthStateChange((_e,s)=>{session=s;checkPlan().then(renderAcctCard);});
+  if(session){await pullFromCloud();await checkPlan();}
+  else if(!localStorage.getItem('sp_skip_auth')){showAuth();}
+  renderAcctCard();
+}
+function showAuth(){authMode='login';renderAuthMode();$('authView').classList.add('show');}
+function skipAuth(){localStorage.setItem('sp_skip_auth','1');$('authView').classList.remove('show');}
+function toggleAuthMode(){authMode=authMode==='login'?'signup':'login';renderAuthMode();}
+function renderAuthMode(){const signup=authMode==='signup';$('authTitle').textContent=signup?'アカウントを作成':'おかえりなさい';$('authBtn').textContent=signup?'新規登録':'ログイン';$('authSwitch').innerHTML=signup?'アカウントをお持ちの場合は <button onclick="toggleAuthMode()">ログイン</button>':'アカウントがない場合は <button onclick="toggleAuthMode()">新規登録</button>';$('authErr').textContent='';}
+async function authSubmit(){
+  if(!sb){$('authErr').textContent='現在クラウド同期を利用できません';return;}
+  const email=($('authEmail').value||'').trim(),pass=$('authPass').value||'';
+  if(!email||!pass){$('authErr').textContent='メールアドレスとパスワードを入力してください';return;}
+  $('authErr').textContent='';$('authBtn').disabled=true;$('authBtn').textContent='処理中…';
+  try{
+    const fn=authMode==='signup'?sb.auth.signUp({email,password:pass}):sb.auth.signInWithPassword({email,password:pass});
+    const{data,error}=await fn;
+    if(error)throw error;
+    if(authMode==='signup'&&data&&!data.session){$('authErr').textContent='確認メールを送信しました。メール内のリンクを開いてください。';$('authBtn').disabled=false;renderAuthMode();return;}
+    session=data.session||session;$('authView').classList.remove('show');
+    await pullFromCloud();await checkPlan();renderHome();renderAcctCard();syncSettingsUI();toast('ログインした');
+  }catch(e){$('authErr').textContent=(e&&e.message)?jaAuthErr(e.message):'ログインに失敗しました';}
+  $('authBtn').disabled=false;renderAuthMode();
+}
+function jaAuthErr(m){if(/already registered|already exists/i.test(m))return'このメールアドレスは登録済みです';if(/invalid login|invalid.*credentials/i.test(m))return'メールアドレスまたはパスワードが違います';if(/password.*least|password.*short/i.test(m))return'パスワードは6文字以上にしてください';if(/rate limit/i.test(m))return'試行回数が多すぎます。少し待ってから再度お試しください';return m;}
+async function signOut(){if(sb)try{await sb.auth.signOut();}catch(e){}session=null;userPlan='free';renderAcctCard();toast('ログアウトした');}
+function renderAcctCard(){
+  const el=$('acctCard');if(!el)return;
+  if(!sb){el.innerHTML='';return;}
+  if(!session){el.innerHTML=`<button class="resume" onclick="showAuth()"><div class="ri">🔐</div><div><div class="rt">ログイン / 新規登録</div><div class="rd">Sproutと同じアカウントで記録を同期</div></div><span class="arr"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></span></button>`;return;}
+  const email=session.user.email||'';const initial=email.charAt(0).toUpperCase()||'?';
+  const planLabel=planSource==='bundle'?'セットプラン':(planSource==='speaking'?'Speaking単体プラン':'Sproutと共通アカウント');
+  el.innerHTML=`<div class="acc-row"><div class="acc-avatar">${initial}</div><div class="acc-info"><div class="acc-email">${esc(email)}</div><div class="acc-plan">${planLabel}</div></div><span class="plan-badge${isPro()?' pro':''}">${isPro()?'PRO':'Free'}</span><span class="sync-dot" id="syncDot"></span></div><button class="btn full" style="margin-top:10px;color:var(--ink-3);background:var(--surface);box-shadow:var(--shadow)" onclick="signOut()">ログアウト</button>`;
+}
+setTheme(state.theme);
+initAuth().then(()=>{renderModeGrid();syncSettingsUI();$('levelChip').textContent=state.level;setTab('home');});
 detectMode();
 if('serviceWorker'in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));}
 </script>
