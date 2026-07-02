@@ -1,5 +1,5 @@
-// v2: HTML はネット最新を優先(network-first)。更新が即反映される。静的アセットのみキャッシュ。
-const C = "sprout-speaking-v2";
+// v3: 下タブの隙間修正・ログイン機能反映のための強制更新
+const C = "sprout-speaking-v3";
 const ASSETS = ["/icon-192.png", "/icon-512.png", "/apple-touch-icon.png", "/manifest.webmanifest"];
 self.addEventListener("install", e => {
   self.skipWaiting();
