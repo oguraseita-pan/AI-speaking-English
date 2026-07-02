@@ -2,11 +2,10 @@
 <html lang="ja" data-theme="dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, interactive-widget=resizes-content">
 <title>Sprout Speaking</title>
 <meta name="theme-color" content="#0F1413" id="themeColor">
 <link rel="manifest" href="/manifest.webmanifest">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -44,7 +43,8 @@ body{font-family:var(--font-ui);background:var(--paper);color:var(--ink);line-he
 button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
 input{font-family:inherit}
 
-#app{max-width:var(--maxw);margin:0 auto;height:100%;height:100dvh;display:flex;flex-direction:column;overflow:hidden;background:var(--paper)}
+#app{max-width:var(--maxw);margin:0 auto;height:100%;height:100dvh;height:var(--vvh,100dvh);display:flex;flex-direction:column;overflow:hidden;background:var(--paper)}
+html.kb .tabbar{display:none}
 .topbar{flex:0 0 auto;z-index:20;display:flex;align-items:center;gap:9px;padding:max(10px,var(--safe-t)) 18px 12px;background:var(--topbar-bg);backdrop-filter:saturate(160%) blur(14px);-webkit-backdrop-filter:saturate(160%) blur(14px);border-bottom:1px solid var(--line-2)}
 .brand{display:flex;align-items:center;gap:9px;font-family:var(--font-en);font-weight:600;font-size:19px;letter-spacing:-.01em}
 .brand .sub{font-family:var(--font-ui);font-weight:500;color:var(--ink-3);font-size:12.5px}
@@ -91,7 +91,7 @@ input{font-family:inherit}
 .custom-box{background:var(--surface);box-shadow:var(--shadow);border-radius:16px;padding:14px}
 .cb-label{font-size:13px;font-weight:700;margin-bottom:10px}
 .cb-row{display:flex;align-items:center;gap:9px;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:4px 4px 4px 14px}
-.cb-row input{flex:1;border:none;outline:none;background:none;font-size:14px;padding:9px 0;min-width:0;color:var(--ink)}
+.cb-row input{flex:1;border:none;outline:none;background:none;font-size:16px;padding:9px 0;min-width:0;color:var(--ink)}
 .cb-row input::placeholder{color:var(--ink-3)}
 .cb-go{width:38px;height:38px;border-radius:10px;background:var(--green);color:var(--on-green);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
 .cb-go:active{transform:scale(.94)}
@@ -150,7 +150,7 @@ input{font-family:inherit}
 .interim{font-size:13px;color:var(--green-ink);text-align:center;height:0;overflow:hidden;transition:height .15s}
 .interim.show{height:22px;margin-bottom:5px}
 .input-row{display:flex;align-items:center;gap:9px;background:var(--surface);box-shadow:var(--shadow);border-radius:999px;padding:4px 5px 4px 16px}
-.input-row input{flex:1;border:none;outline:none;background:none;font-size:15px;padding:9px 0;min-width:0;color:var(--ink)}
+.input-row input{flex:1;border:none;outline:none;background:none;font-size:16px;padding:9px 0;min-width:0;color:var(--ink)}
 .input-row input::placeholder{color:var(--ink-3)}
 .send{width:38px;height:38px;border-radius:50%;background:var(--green-soft);color:var(--green-ink);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
 .send:disabled{opacity:.35}
@@ -245,7 +245,7 @@ input[type=range]{flex:1;accent-color:var(--green)}
 .test-prog{flex:1;height:7px;border-radius:4px;background:var(--surface-2);overflow:hidden}
 .test-prog i{display:block;height:100%;background:var(--green);border-radius:4px;transition:width .3s}
 .test-count{font-size:12px;font-weight:700;color:var(--ink-3);min-width:44px;text-align:right}
-.test-body{flex:1;min-height:0;overflow-y:auto;padding:24px 20px 26px}
+.test-body{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:24px 20px calc(26px + var(--safe-b))}
 .q-num{font-size:12px;font-weight:700;color:var(--green-ink);letter-spacing:.04em;margin-bottom:12px}
 .q-text{font-family:var(--font-en);font-size:21px;font-weight:500;line-height:1.5;margin-bottom:22px}
 .q-choices{display:flex;flex-direction:column;gap:10px}
@@ -275,14 +275,14 @@ input[type=range]{flex:1;accent-color:var(--green)}
 .sp-line{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:13.5px;color:var(--ink-2);padding:8px 0;border-bottom:1px solid var(--line)}
 .sp-line:last-of-type{border-bottom:none}
 .sp-line b{color:var(--ink);text-align:right;font-weight:600}
-#authView{display:none;position:fixed;inset:0;max-width:var(--maxw);margin:0 auto;background:var(--paper);z-index:80;flex-direction:column;padding:max(28px,var(--safe-t)) 24px 24px;overflow-y:auto}
+#authView{display:none;position:fixed;inset:0;max-width:var(--maxw);margin:0 auto;background:var(--paper);z-index:80;flex-direction:column;padding:max(28px,var(--safe-t)) 24px calc(24px + var(--safe-b));overflow-y:auto;-webkit-overflow-scrolling:touch}
 #authView.show{display:flex}
 .auth-logo{display:flex;align-items:center;gap:10px;margin-bottom:6px}
 .auth-title{font-size:22px;font-weight:700;margin:18px 0 6px}
 .auth-sub{font-size:13.5px;color:var(--ink-2);line-height:1.6;margin-bottom:26px}
 .auth-field{margin-bottom:12px}
 .auth-field label{display:block;font-size:12px;font-weight:700;color:var(--ink-2);margin-bottom:6px}
-.auth-field input{width:100%;box-sizing:border-box;border:1.5px solid var(--line);border-radius:12px;padding:13px 14px;font-size:15px;background:var(--surface);color:var(--ink);outline:none}
+.auth-field input{width:100%;box-sizing:border-box;border:1.5px solid var(--line);border-radius:12px;padding:13px 14px;font-size:16px;background:var(--surface);color:var(--ink);outline:none}
 .auth-field input:focus{border-color:var(--green)}
 .auth-err{font-size:12.5px;color:#E5484D;margin:2px 0 4px;min-height:1em}
 .auth-switch{text-align:center;font-size:13px;color:var(--ink-2);margin-top:18px}
@@ -483,7 +483,7 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1900);}
 
-function setTab(tab){state.tab=tab;['home','talk','cards','settings'].forEach(t=>{$('screen-'+t).classList.toggle('hidden',t!==tab);$('tab-'+t).classList.toggle('active',t===tab);});$('chatView').classList.toggle('hidden',!(tab==='talk'&&state.mode));if(tab==='home')renderHome();if(tab==='cards')renderCards();if(tab==='settings'){syncSettingsUI();updateModePill();}}
+function setTab(tab){state.tab=tab;['home','talk','cards','settings'].forEach(t=>{$('screen-'+t).classList.toggle('hidden',t!==tab);$('tab-'+t).classList.toggle('active',t===tab);});$('chatView').classList.toggle('hidden',!(tab==='talk'&&state.mode));if(tab==='home')renderHome();if(tab==='cards')renderCards();if(tab==='settings'){syncSettingsUI();updateModePill();renderAcctCard();}}
 
 /* HOME */
 function greet(){const h=new Date().getHours();if(h<5)return'こんばんは';if(h<11)return'おはよう';if(h<18)return'こんにちは';return'こんばんは';}
@@ -944,7 +944,6 @@ function updateModePill(){const p=$('modePill'),t=$('modeText');if(!p)return;con
 /* ===== Supabase Auth + Cloud Sync (shared with Sprout) ===== */
 const CLOUD={url:'https://lfjlrokehorsnfaytkgx.supabase.co',anonKey:'sb_publishable_jhQ8QRqM6QuCWlEjOPok9A_62zFa10k'};
 let sb=null,session=null,userPlan='free',planSource=null,authMode='login',syncTimer=null;
-try{if(window.supabase)sb=window.supabase.createClient(CLOUD.url,CLOUD.anonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'}});}catch(e){}
 const PERSIST_KEYS=['level','voiceOn','rate','jaDefault','tone','theme','autoEnd','homeQ','voiceName','ttsMode','groqVoice','silenceMs','cards','noteFolder'];
 const LOCAL_KEY='sproutSpeakingState';
 function snapshotState(){const o={};PERSIST_KEYS.forEach(k=>o[k]=state[k]);return o;}
@@ -958,14 +957,23 @@ async function pullFromCloud(){if(!sb||!session)return;try{const{data,error}=awa
 async function checkPlan(){userPlan='free';planSource=null;if(!sb||!session)return;try{const{data}=await sb.from('plan_status').select('speaking_plan,bundle').eq('user_id',session.user.id).maybeSingle();if(data){if(data.bundle){userPlan='pro';planSource='bundle';}else if(data.speaking_plan&&data.speaking_plan!=='free'){userPlan=data.speaking_plan;planSource='speaking';}}}catch(e){}}
 function isPro(){return userPlan&&userPlan!=='free';}
 
+/* ---- 画面高さの安定化（キーボード・ツールバー追従、下タブのズレ防止） ---- */
+(function(){const vv=window.visualViewport;if(!vv)return;const doc=document.documentElement;let raf=0;
+  const fit=()=>{raf=0;doc.style.setProperty('--vvh',vv.height+'px');doc.classList.toggle('kb',(window.innerHeight-vv.height)>90);if(window.scrollY)window.scrollTo(0,0);};
+  const req=()=>{if(!raf)raf=requestAnimationFrame(fit);};
+  vv.addEventListener('resize',req);vv.addEventListener('scroll',req);window.addEventListener('orientationchange',req);fit();})();
+
+function loadSupabase(){return new Promise(res=>{if(window.supabase)return res(true);const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js';let done=false;const fin=ok=>{if(!done){done=true;res(ok);}};s.onload=()=>fin(true);s.onerror=()=>fin(false);setTimeout(()=>fin(false),5000);document.head.appendChild(s);});}
+function refreshAfterSync(){setTheme(state.theme);syncSettingsUI();$('levelChip').textContent=state.level;if(state.tab==='home')renderHome();if(state.tab==='cards')renderCards();renderAcctCard();}
 async function initAuth(){
-  loadLocal();
+  await loadSupabase();
+  try{if(!sb&&window.supabase)sb=window.supabase.createClient(CLOUD.url,CLOUD.anonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'}});}catch(e){}
   if(!sb){renderAcctCard();return;}
   try{const{data}=await sb.auth.getSession();session=data&&data.session?data.session:null;}catch(e){session=null;}
   sb.auth.onAuthStateChange((_e,s)=>{session=s;checkPlan().then(renderAcctCard);});
   if(session){await pullFromCloud();await checkPlan();}
   else if(!localStorage.getItem('sp_skip_auth')){showAuth();}
-  renderAcctCard();
+  refreshAfterSync();
 }
 function showAuth(){authMode='login';renderAuthMode();$('authView').classList.add('show');}
 function skipAuth(){localStorage.setItem('sp_skip_auth','1');$('authView').classList.remove('show');}
@@ -982,7 +990,7 @@ async function authSubmit(){
     if(error)throw error;
     if(authMode==='signup'&&data&&!data.session){$('authErr').textContent='確認メールを送信しました。メール内のリンクを開いてください。';$('authBtn').disabled=false;renderAuthMode();return;}
     session=data.session||session;$('authView').classList.remove('show');
-    await pullFromCloud();await checkPlan();renderHome();renderAcctCard();syncSettingsUI();toast('ログインした');
+    await pullFromCloud();await checkPlan();refreshAfterSync();toast('ログインした');
   }catch(e){$('authErr').textContent=(e&&e.message)?jaAuthErr(e.message):'ログインに失敗しました';}
   $('authBtn').disabled=false;renderAuthMode();
 }
@@ -996,8 +1004,9 @@ function renderAcctCard(){
   const planLabel=planSource==='bundle'?'セットプラン':(planSource==='speaking'?'Speaking単体プラン':'Sproutと共通アカウント');
   el.innerHTML=`<div class="acc-row"><div class="acc-avatar">${initial}</div><div class="acc-info"><div class="acc-email">${esc(email)}</div><div class="acc-plan">${planLabel}</div></div><span class="plan-badge${isPro()?' pro':''}">${isPro()?'PRO':'Free'}</span><span class="sync-dot" id="syncDot"></span></div><button class="btn full" style="margin-top:10px;color:var(--ink-3);background:var(--surface);box-shadow:var(--shadow)" onclick="signOut()">ログアウト</button>`;
 }
-setTheme(state.theme);
-initAuth().then(()=>{renderModeGrid();syncSettingsUI();$('levelChip').textContent=state.level;setTab('home');});
+loadLocal();
+setTheme(state.theme);renderModeGrid();syncSettingsUI();$('levelChip').textContent=state.level;setTab('home');
+initAuth();
 detectMode();
 if('serviceWorker'in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));}
 </script>
