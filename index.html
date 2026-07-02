@@ -851,29 +851,12 @@ function updateHF(){$('hfBanner').classList.toggle('show',state.handsfree);$('mi
 
 /* TTS */
 let enVoice=null;
-function enVoices(){if(!('speechSynthesis'in window))return [];
-  const NOVELTY=/albert|bad news|bahh|bells|boing|bubbles|cellos|good news|jester|organ|superstar|trinoids|whisper|wobble|zarvox|junior|kathy|ralph|fred|grandma|grandpa|rocko|shelley|sandy|flo|eddy|reed|rishi|deranged|hysterical|novelty|trin/i;
-  // keep only English voices with ASCII names (drops localized novelty like "ささやき"), no novelty
-  const ok=v=>/^en[-_]/i.test(v.lang)&&!/[^\x00-\x7F]/.test(v.name)&&!NOVELTY.test(v.name);
-  let all=speechSynthesis.getVoices().filter(ok);
-  let vs=all.filter(v=>/^en[-_](US|GB)/i.test(v.lang));if(!vs.length)vs=all;
-  const seen=new Set();vs=vs.filter(v=>{if(seen.has(v.name))return false;seen.add(v.name);return true;});
-  const q=v=>/(siri|premium|enhanced)/i.test(v.name)?0:1,loc=v=>v.localService===false?1:0,u=v=>/en[-_]US/i.test(v.lang)?0:1;
-  vs.sort((a,b)=>q(a)-q(b)||loc(a)-loc(b)||u(a)-u(b)||a.name.localeCompare(b.name));
-  return vs.slice(0,10);}
 function allVoiceByName(n){return ('speechSynthesis'in window)?speechSynthesis.getVoices().find(v=>v.name===n):null;}
 function chosenVoice(){if(state.voiceName){const v=allVoiceByName(state.voiceName);if(v)return v;}return enVoice;}
-function pickVoice(){if(!('speechSynthesis'in window))return;const vs=speechSynthesis.getVoices();enVoice=vs.find(v=>/en[-_]US/i.test(v.lang)&&/siri|enhanced|premium/i.test(v.name))||vs.find(v=>/en[-_]US/i.test(v.lang)&&/female|samantha|aria|jenny|google US/i.test(v.name))||vs.find(v=>/en[-_]US/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang))||null;if($('voiceList'))buildVoiceList();}
+function pickVoice(){if(!('speechSynthesis'in window))return;const vs=speechSynthesis.getVoices();enVoice=vs.find(v=>/en[-_]US/i.test(v.lang)&&/siri|enhanced|premium/i.test(v.name))||vs.find(v=>/en[-_]US/i.test(v.lang)&&/female|samantha|aria|jenny|google US/i.test(v.name))||vs.find(v=>/en[-_]US/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang))||null;}
 if('speechSynthesis'in window){speechSynthesis.onvoiceschanged=pickVoice;pickVoice();}
 const TONE_VOICE={friendly:{r:1,p:1.02},polite:{r:.96,p:1},tutor:{r:.97,p:1.02},cheerful:{r:1.08,p:1.16},calm:{r:.84,p:.94},native:{r:1.06,p:1}};
 function speakWeb(text,ondone){if(!('speechSynthesis'in window)){if(ondone)ondone();return;}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='en-US';const tv=TONE_VOICE[state.tone]||{r:1,p:1};u.rate=Math.min(1.4,Math.max(.5,state.rate*tv.r));u.pitch=tv.p;const v=chosenVoice();if(v)u.voice=v;if(ondone)u.onend=ondone;speechSynthesis.speak(u);}
-function previewVoice(name){if(!('speechSynthesis'in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance("Hi! Let's practice English together.");u.lang='en-US';const v=allVoiceByName(name);if(v)u.voice=v;u.rate=state.rate;speechSynthesis.speak(u);}
-function buildVoiceList(){const el=$('voiceList');if(!el)return;const vs=enVoices();if(!vs.length){el.innerHTML='<div style="font-size:12.5px;color:var(--ink-3);padding:4px 2px;line-height:1.6">声を読み込み中…<br>無ければ 設定→アクセシビリティ→読み上げコンテンツ→声→English から英語の声をダウンロードしてね。</div>';return;}
-  const nice=v=>/siri|enhanced|premium/i.test(v.name);
-  el.innerHTML=`<button class="tone-opt${!state.voiceName?' on':''}" onclick="setVoice('')"><div style="flex:1"><div class="tn">自動（おすすめ）</div><div class="td">端末で一番自然な英語の声を自動選択</div></div><div class="tc">${!state.voiceName?'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>':''}</div></button>`+
-  vs.map(v=>`<div class="tone-opt${state.voiceName===v.name?' on':''}"><button style="flex:1;text-align:left;background:none;padding:0" onclick="setVoice('${v.name.replace(/'/g,"\\'")}')"><div class="tn">${esc(v.name)}${nice(v)?' ✨':''}</div><div class="td">${esc(v.lang)}</div></button><button class="v-play" onclick="previewVoice('${v.name.replace(/'/g,"\\'")}')" aria-label="試聴"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button><div class="tc">${state.voiceName===v.name?'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>':''}</div></div>`).join('');
-}
-function setVoice(name){state.voiceName=name||null;buildVoiceList();if(name)previewVoice(name);toast(name?('声：'+name):'自動選択に');}
 function tts(text,ondone){if(!text){if(ondone)ondone();return;}if(state.ttsMode==='groq'&&MODE==='backend'){groqTTS(text,ondone);}else{speakWeb(text,ondone);}}
 /* ---- Groq PlayAI cloud TTS (iOS/Android同一・自然な声) ---- */
 const GROQ_VOICES=[['Celeste-PlayAI','Celeste'],['Arista-PlayAI','Arista'],['Gail-PlayAI','Gail'],['Indigo-PlayAI','Indigo'],['Quinn-PlayAI','Quinn'],['Fritz-PlayAI','Fritz'],['Atlas-PlayAI','Atlas'],['Mason-PlayAI','Mason'],['Thunder-PlayAI','Thunder']];
